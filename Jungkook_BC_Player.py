@@ -28,7 +28,32 @@ def is_valid(row, col):
         return True
     return False
 
-def move_coordinator(state, row, col):
+# def move_coordinator(state, row, col):
+#     piece = state.board[row][col]
+#     board = state.board
+#     kings = find_kings(state)
+#     kingX = kings[0]
+#     kingY = kings[1]
+#     whose = who(piece)
+#     newState = BC_state(board)
+#     successors = []
+#     captures = []
+
+#     checking = True
+#     move = 1
+
+#     while checking:
+#         kill = False
+#         temp = BC_state(state.board)
+#         if not is_valid(row + move, col) or newState.board[row + move][col] != 0:
+#             break
+#         temp.board[row + move][col] = temp.board[row][col]
+#         temp.board[row][col] = 0
+#         #if piece is 4 or piece is 5:
+        
+#     pass
+
+def move_like_queen(state, row, col):
     piece = state.board[row][col]
     board = state.board
     kings = find_kings(state)
@@ -42,19 +67,137 @@ def move_coordinator(state, row, col):
     checking = True
     move = 1
 
+    if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+        successors = successors + coord_capture(state, row, col)
+        successors = successors + noncapture_moves(state, row, col)
+
+def noncapture_moves(state, row, col):
+    piece = state.board[row][col]
+    whose = who(piece)
+    successors = []
+    checking = True
+    move = 1
+    # Moves in South direction
     while checking:
-        kill = False
-        temp = BC_state(state.board)
-        if not is_valid(row + move, col) or newState.board[row + move][col] != 0:
-            break
-        temp.board[row + move][col] = temp.board[row][col]
-        temp.board[row][col] = 0
-        if piece is 4 or piece is 5:
-            
+        newState = BC_state(state.board)
+        if is_valid(row, col+move) and temp.board[row][col + move] == 0:
+            newState.board[row][col + move] = piece
+            newState.board[row][col] = 0
+            new_move = ((row, col), (row, col + move))
+            temp = BC_state(newState.board)
+            successors = successors + [[new_move, temp]]
+            move += 1
+        else:
+            checking = False
+    
+    checking = True
+    move = 1
+    # Moves in SW direction
+    while checking:
+        newState = BC_state(state.board)
+        if is_valid(row - move, col + move) and temp.board[row - move][col + move] == 0:
+            newState.board[row - move][col + move] = piece
+            newState.board[row][col] = 0
+            new_move = ((row, col), (row - move, col + move))
+            temp = BC_state(newState.board)
+            successors = successors + [[new_move, temp]]
+            move += 1
+        else:
+            checking = False
+    
+    checking = True
+    move = 1
+    # Moves in W direction
+    while checking:
+        newState = BC_state(state.board)
+        if is_valid(row - move, col) and temp.board[row - move][col] == 0:
+            newState.board[row - move][col] = piece
+            newState.board[row][col] = 0
+            new_move = ((row, col), (row - move, col))
+            temp = BC_state(newState.board)
+            successors = successors + [[new_move, temp]]
+            move += 1
+        else:
+            checking = False
+    
+    checking = True
+    move = 1
+    # Moves in NW direction
+    while checking:
+        newState = BC_state(state.board)
+        if is_valid(row - move, col - move) and temp.board[row - move][col - move] == 0:
+            newState.board[row - move][col - move] = piece
+            newState.board[row][col] = 0
+            new_move = ((row, col), (row - move, col - move))
+            temp = BC_state(newState.board)
+            successors = successors + [[new_move, temp]]
+            move += 1
+        else:
+            checking = False
+    
+    checking = True
+    move = 1
+    # Moves in N direction
+    while checking:
+        newState = BC_state(state.board)
+        if is_valid(row, col - move) and temp.board[row][col - move] == 0:
+            newState.board[row][col - move] = piece
+            newState.board[row][col] = 0
+            new_move = ((row, col), (row, col - move))
+            temp = BC_state(newState.board)
+            successors = successors + [[new_move, temp]]
+            move += 1
+        else:
+            checking = False
+    
+    checking = True
+    move = 1
+    # Moves in NE direction
+    while checking:
+        newState = BC_state(state.board)
+        if is_valid(row + move, col - move) and temp.board[row + move][col - move] == 0:
+            newState.board[row + move][col - move] = piece
+            newState.board[row][col] = 0
+            new_move = ((row, col), (row + move, col - move))
+            temp = BC_state(newState.board)
+            successors = successors + [[new_move, temp]]
+            move += 1
+        else:
+            checking = False
+    
+    checking = True
+    move = 1
+    # Moves in E direction
+    while checking:
+        newState = BC_state(state.board)
+        if is_valid(row + move, col) and temp.board[row + move][col] == 0:
+            newState.board[row + move][col] = piece
+            newState.board[row][col] = 0
+            new_move = ((row, col), (row + move, col))
+            temp = BC_state(newState.board)
+            successors = successors + [[new_move, temp]]
+            move += 1
+        else:
+            checking = False
+    
+    checking = True
+    move = 1
+    # Moves in SE direction
+    while checking:
+        newState = BC_state(state.board)
+        if is_valid(row + move, col + move) and temp.board[row + move][col + move] == 0:
+            newState.board[row + move][col + move] = piece
+            newState.board[row][col] = 0
+            new_move = ((row, col), (row + move, col + move))
+            temp = BC_state(newState.board)
+            successors = successors + [[new_move, temp]]
+            move += 1
+        else:
+            checking = False
 
-
+    
+def coord_capture(state, row, col):
     pass
-
 
 def find_kings(state):
     board = state.board
