@@ -174,8 +174,14 @@ def move_king(currentState, row, col):
                 if checkImmobilized(currentState.board, row + i, col + j, king):
                     return []
                 newState = BC_state(currentState.board)
-                if currentState.board[row+i][col+j] == 0 or \
-                        who(king) != who(currentState.board[row+i][col+j]):
+                # checking imitator capturing king
+                if king == 8 and currentState.board[row+i][col+j] == 13 or
+                        king == 9 and currentState.board[row+i][col+j] == 14:
+                    move = ((row, col), (row+i, col+j))
+                    return [[move, newState]]                      
+                # move king if empty spot next to it or the opposing teams occupying it
+                if king == 13 or king == 14 or currentState.board[row+i][col+j] == 0 or \
+                        who(king) != who(currentState.board[row+i][col+j])):
                     # update new position with king and remove the original
                     newState.board[row+i][col+j] = king
                     newState.board[row][col] = 0
@@ -200,14 +206,18 @@ def move_pincer(currentState, row, col):
                 if checkImmobilized(currentState.board, row + i, col + j, pincer):
                     return []
                 newState = BC_state(currentState.board)
-                if currentState.board[row+i][col+j] == 0 or \
-                        who(pincer) != who(currentState.board[row+i][col+j]):
+                # check imitator capturing pincer
+                if pincer == 8 and currentState.board[row+i][col+j] == 3 
+                        or pincer == 9 and currentState.board[row+i][col+j] == 2:
+                    move = ((row, col), (row+i, col+j))
+                    return [[move, pincer_capture(newState, row+i, col+j)]] 
+                if currentState.board[row+i][col+j] == 0:
                     # update new position with pincer and remove the original
                     newState.board[row+i][col+j] = pincer
                     newState.board[row][col] = 0
                     # store the move made
                     move = ((row, col), (row+i, col+j))
-                    # remove the captured pieces on the board
+                    # remove the captured pieces on the board with pincer at new location
                     newState = pincer_capture(newState, row+i, col+j)
                     # add [move, new state] to possible states for that piece
                     possibleStates = possibleStates + [move, newState]
@@ -220,15 +230,12 @@ def pincer_capture(newState, row, col):
         for j in range (-1, 2):
             # only can capture vertically and horizontally
             if i != 0 and j = 0 or i = 0 and j!= 0:
-                if 0 <= row + i < 8 and 0 <= col + j < 8:
-                    if updatedBoard.board[row+i][col+j] != 0:
+                if 0 <= row + 2*i < 8 and 0 <= col + 2*j < 8:
+                    if updatedBoard.board[row+i][col+j] != 0 and 
+                            who(updatedBoard.board[row+2*i][col+2*j]) == 
+                                    who(updatedBoard.board[row][col]):
                         # captured
                         updatedBoard.board[row+i][col+j] = 0
-
+    # return same board if no captures
+    # or new board with all the captured pieces removed 
     return updatedBoard
-
-# Withdrawer
-
-def move_withdrawer(currentState, row, col):
-
-
