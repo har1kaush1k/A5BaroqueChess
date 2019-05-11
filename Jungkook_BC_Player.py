@@ -3,14 +3,134 @@ The beginnings of an agent that might someday play Baroque Chess.
 
 '''
 
-import BC_state_etc as BC
+from BC_state_etc import *
 
+pieces = []
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
+    successors = generate_successors(currentState)
+
     pass
+
+def generate_successors(currentState):
+    successors = []
+    for i in range(8):
+        for j in range(8):
+            sq = currentState.board[i][j]
+            if who(sq) == currentState.whose_move and sq > 0:
+
+
+def piece_noncapture_moves(i, j, currentState):
+    moves = []
+    sq = currentState.board[i][j]
+    if sq // 2 == 1:
+        directions = [NORTH, WEST, EAST, SOUTH]
+    else:
+        directions = [NORTH, SOUTH, WEST, EAST, NW, NE, SW, SE]
+    if sq // 2 == 1:
+        distance = 7
+        while distance > 0:
+
+        # for y in range(8):
+        #     empty = True
+        #     delta = 1
+        #     curr = j
+        #     if j > y: delta = -1
+        #     while curr != y and empty:
+        #         if currentState.board[i][curr] != 0:
+        #             empty = False
+        #         curr += delta
+        #     if currentState.board[i][y] != 0 and empty:
+        #         new_board = [r[:] for r in currentState.board]
+        #         new_board[i][y] = sq
+        #         new_board[i][j] = 0
+        #         moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+        # for x in range(8):
+        #     empty = True
+        #     delta = 1
+        #     curr = j
+        #     if j > x: delta = -1
+        #     while curr != x and empty:
+        #         if currentState.board[curr][j] != 0:
+        #             empty = False
+        #         curr += delta
+        #     if currentState.board[x][j] != 0 and empty:
+        #         new_board = [r[:] for r in currentState.board]
+        #         new_board[x][j] = sq
+        #         new_board[i][j] = 0
+        #         moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+
+    if sq // 2 == 1:
+        directions = [NORTH, SOUTH, WEST, EAST]
+    else:
+        directions = [NORTH, SOUTH, WEST, EAST, NW, NE, SW, SE]
+    # for dir in directions:
+    #     spaces = 1
+    #
+    #     if dir == NORTH:
+    #         while(currentState.board[i][j - spaces] == 0):
+    #             new_board = [r[:] for r in currentState.board]
+    #             new_board[i][j - spaces] = sq
+    #             new_board[i][j] = 0
+    #             moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+    #             spaces += 1
+    #     if dir == SOUTH:
+    #         while currentState.board[i][j + spaces] == 0:
+    #             new_board = [r[:] for r in currentState.board]
+    #             new_board[i][j + spaces] = sq
+    #             new_board[i][j] = 0
+    #             moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+    #             spaces += 1
+    #     if dir == EAST:
+    #         while currentState.board[i + spaces][j] == 0:
+    #             new_board = [r[:] for r in currentState.board]
+    #             new_board[i + spaces][j] = sq
+    #             new_board[i][j] = 0
+    #             moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+    #             spaces += 1
+    #     if dir == WEST:
+    #         while currentState.board[i - spaces][j] == 0:
+    #             new_board = [r[:] for r in currentState.board]
+    #             new_board[i - spaces][j] = sq
+    #             new_board[i][j] = 0
+    #             moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+    #             spaces += 1
+    #     if dir == NW:
+    #         while currentState.board[i - spaces][j - spaces] == 0:
+    #             new_board = [r[:] for r in currentState.board]
+    #             new_board[i - spaces][j - spaces] = sq
+    #             new_board[i][j] = 0
+    #             moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+    #             spaces += 1
+    #     if dir == NE:
+    #         while currentState.board[i + spaces][j - spaces] == 0:
+    #             new_board = [r[:] for r in currentState.board]
+    #             new_board[i + spaces][j - spaces] = sq
+    #             new_board[i][j] = 0
+    #             moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+    #             spaces += 1
+    #     if dir == SW:
+    #         while currentState.board[i - spaces][j + spaces] == 0:
+    #             new_board = [r[:] for r in currentState.board]
+    #             new_board[i - spaces][j + spaces] = sq
+    #             new_board[i][j] = 0
+    #             moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+    #             spaces += 1
+    #     if dir == SE:
+    #         while currentState.board[i + spaces][j + spaces] == 0:
+    #             new_board = [r[:] for r in currentState.board]
+    #             new_board[i + spaces][j + spaces] = sq
+    #             new_board[i][j] = 0
+    #             moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+    #             spaces += 1
+
+
+
+
+
 
 
 def makeMove(currentState, currentRemark, timelimit=10):
@@ -18,7 +138,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
     # You should implement an anytime algorithm based on IDDFS.
 
     # The following is a placeholder that just copies the current state.
-    newState = BC.BC_state(currentState.board)
+    newState = BC_state(currentState.board)
 
     # Fix up whose turn it will be.
     newState.whose_move = 1 - currentState.whose_move
