@@ -35,7 +35,7 @@ def move_coordinator(state, row, col):
     kingX = kings[0]
     kingY = kings[1]
     whose = who(piece)
-    newState = BC_state(board)
+    # newState = BC_state(board)
     successors = []
     captures = []
 
@@ -45,15 +45,21 @@ def move_coordinator(state, row, col):
     while checking:
         kill = False
         temp = BC_state(state.board)
-        if not is_valid(row + move, col) or newState.board[row + move][col] != 0:
+        if not is_valid(row + move, col) or temp.board[row + move][col] != 0:
             break
         temp.board[row + move][col] = temp.board[row][col]
         temp.board[row][col] = 0
         if piece is 4 or piece is 5:
+            intersect1 = -1
+            intersect2 = -1
+            if who(temp.board[kingX][col]) != who(temp.board[row][col + move] and temp.board[kingX][col + move] != 0:
+                intersect1 = temp.board[kingX][col]
+                temp.board[kingX][col] = 0
+                kill = True
+
+            if who(temp.board[row+move][kingCol])
             
 
-
-    pass
 
 
 def find_kings(state):
