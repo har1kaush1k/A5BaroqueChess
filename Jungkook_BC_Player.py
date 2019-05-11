@@ -223,11 +223,37 @@ def prepare(player2Nickname):
 
 
 def basicStaticEval(state):
-    '''Use the simple method for state evaluation described in the spec.
-    This is typically used in parameterized_minimax calls to verify
-    that minimax and alpha-beta pruning work correctly.'''
-    pass
+	'''Use the simple method for state evaluation described in the spec. This is typically
+	used in parameterized_minimax calls to verify that minimax and alpha-beta pruning work
+	correctly.'''
 
+	# The value of the function is the sum of the values of the pieces on the board in the given state
+	total = 0
+	for row in state:
+		for col in row:
+			total = total + pieceVal(col)
+
+
+def pieceVal(piece):
+	# black pieces
+	if state == ‘p’:
+		return -1
+	elif state == ‘k’:
+		return -100
+	elif state.isLowerCase():
+		return -2
+
+	# white pieces
+	elif state == ‘P’:
+		return 1
+	elif state == ‘K’:
+		return 100
+	elif state.isUpperCase():
+		return 2
+
+    # empty spaces
+	else:
+		return 0
 
 def staticEval(state):
     '''Compute a more thorough static evaluation of the given state.
@@ -239,14 +265,13 @@ def staticEval(state):
 def checkImmobilized(state, row, col, piece):
     if state[row][col] is 14 or 15:
         # checking if the piece is immobilized
-        team = state[row][col] % 2
-        if team != piece % 2:
+        if who(state[row][col]) != who(piece) :
             return True
     return False
 
 # King
 # does not return captured list
-# returns legal move and new state resulting from move
+# returns legal moves and new state resulting from move
 # does not include imitator
 
 def move_king(currentState, row, col):
@@ -260,9 +285,60 @@ def move_king(currentState, row, col):
                     return []
                 newState = BC_state(currentState.board)
                 if currentState.board[row+i][col+j] == 0 or \
-                        king % 2 != currentState.board[row+i][col+j] % 2:
+                        who(king) != who(currentState.board[row+i][col+j]):
+                    # update new position with king and remove the original
                     newState.board[row+i][col+j] = king
                     newState.board[row][col] = 0
-                    move = ((row, col), (row+i, row+j))
+                    move = ((row, col), (row+i, col+j))
                     possibleStates = possibleStates + [move, newState]
     return possibleStates
+
+# Pincer
+# does not return captured list
+# returns legal moves and new state resulting from move
+# removes captured pieces from the board
+# does not include imitator
+
+def move_pincer(currentState, row, col):
+    pincer = currentState.board[row][col]
+    possibleStates = []
+
+    for i in range(-7, 8):
+        for j in range(-7, 8):
+            # pincer only can move vertically and horizontally like a rook in chess
+            if (i != 0 and j= 0 or i = 0 and j!= 0) and 0 <= row + i < 8 and 0 <= col + j < 8:
+                if checkImmobilized(currentState.board, row + i, col + j, pincer):
+                    return []
+                newState = BC_state(currentState.board)
+                if currentState.board[row+i][col+j] == 0 or \
+                        who(pincer) != who(currentState.board[row+i][col+j]):
+                    # update new position with pincer and remove the original
+                    newState.board[row+i][col+j] = pincer
+                    newState.board[row][col] = 0
+                    # store the move made
+                    move = ((row, col), (row+i, col+j))
+                    # remove the captured pieces on the board
+                    newState = pincer_capture(newState, row+i, col+j)
+                    # add [move, new state] to possible states for that piece
+                    possibleStates = possibleStates + [move, newState]
+    # return all possible states for the board
+    return possibleStates
+
+def pincer_capture(newState, row, col):
+    updatedBoard = BC_state(newState.board)
+    for i in range (-1, 2):
+        for j in range (-1, 2):
+            # only can capture vertically and horizontally
+            if i != 0 and j = 0 or i = 0 and j!= 0:
+                if 0 <= row + i < 8 and 0 <= col + j < 8:
+                    if updatedBoard.board[row+i][col+j] != 0:
+                        # captured
+                        updatedBoard.board[row+i][col+j] = 0
+
+    return updatedBoard
+
+# Withdrawer
+
+def move_withdrawer(currentState, row, col):
+
+
