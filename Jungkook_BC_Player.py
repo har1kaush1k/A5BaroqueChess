@@ -20,53 +20,103 @@ def generate_successors(currentState):
     for i in range(8):
         for j in range(8):
             sq = currentState.board[i][j]
-            if who(sq) == currentState.whose_move and sq > 0:
+            # if who(sq) == currentState.whose_move and sq > 0:
 
 
-def piece_noncapture_moves(i, j, currentState):
-    moves = []
-    sq = currentState.board[i][j]
-    if sq // 2 == 1:
-        directions = [NORTH, WEST, EAST, SOUTH]
-    else:
-        directions = [NORTH, SOUTH, WEST, EAST, NW, NE, SW, SE]
-    if sq // 2 == 1:
-        distance = 7
-        while distance > 0:
+def is_valid(row, col):
+    if 0 <= row < 8 and 0 <= col < 8:
+        return True
+    return False
 
-        # for y in range(8):
-        #     empty = True
-        #     delta = 1
-        #     curr = j
-        #     if j > y: delta = -1
-        #     while curr != y and empty:
-        #         if currentState.board[i][curr] != 0:
-        #             empty = False
-        #         curr += delta
-        #     if currentState.board[i][y] != 0 and empty:
-        #         new_board = [r[:] for r in currentState.board]
-        #         new_board[i][y] = sq
-        #         new_board[i][j] = 0
-        #         moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
-        # for x in range(8):
-        #     empty = True
-        #     delta = 1
-        #     curr = j
-        #     if j > x: delta = -1
-        #     while curr != x and empty:
-        #         if currentState.board[curr][j] != 0:
-        #             empty = False
-        #         curr += delta
-        #     if currentState.board[x][j] != 0 and empty:
-        #         new_board = [r[:] for r in currentState.board]
-        #         new_board[x][j] = sq
-        #         new_board[i][j] = 0
-        #         moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+def move_coordinator(state, row, col):
+    piece = state.board[row][col]
+    board = state.board
+    kings = find_kings(state)
+    kingX = kings[0]
+    kingY = kings[1]
+    whose = who(piece)
+    newState = BC_state(board)
+    successors = []
+    captures = []
 
-    if sq // 2 == 1:
-        directions = [NORTH, SOUTH, WEST, EAST]
-    else:
-        directions = [NORTH, SOUTH, WEST, EAST, NW, NE, SW, SE]
+    checking = True
+    move = 1
+
+    while checking:
+        kill = False
+        temp = BC_state(state.board)
+        if not is_valid(row + move, col) or newState.board[row + move][col] != 0:
+            break
+        temp.board[row + move][col] = temp.board[row][col]
+        temp.board[row][col] = 0
+        if piece is 4 or piece is 5:
+            
+
+
+    pass
+
+
+def find_kings(state):
+    board = state.board
+    locs = [-1, -1, -1, -1]
+    for row in range(8):
+        for col in range(8):
+            piece = board[row][col]
+            if piece == 12 or piece == 13:
+                if who(piece) == state.whose_turn:
+                    locs[0] = row
+                    locs[1] = col
+                else:
+                    locs[2] = row
+                    locs[3] = col
+            if locs[0] != -1 and locs[2] != -1:
+                return locs
+    return locs
+
+# def piece_noncapture_moves(i, j, currentState):
+#     moves = []
+#     sq = currentState.board[i][j]
+#     if sq // 2 == 1:
+#         directions = [NORTH, WEST, EAST, SOUTH]
+#     else:
+#         directions = [NORTH, SOUTH, WEST, EAST, NW, NE, SW, SE]
+#     if sq // 2 == 1:
+#         distance = 7
+#         while distance > 0:
+#
+#         # for y in range(8):
+#         #     empty = True
+#         #     delta = 1
+#         #     curr = j
+#         #     if j > y: delta = -1
+#         #     while curr != y and empty:
+#         #         if currentState.board[i][curr] != 0:
+#         #             empty = False
+#         #         curr += delta
+#         #     if currentState.board[i][y] != 0 and empty:
+#         #         new_board = [r[:] for r in currentState.board]
+#         #         new_board[i][y] = sq
+#         #         new_board[i][j] = 0
+#         #         moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+#         # for x in range(8):
+#         #     empty = True
+#         #     delta = 1
+#         #     curr = j
+#         #     if j > x: delta = -1
+#         #     while curr != x and empty:
+#         #         if currentState.board[curr][j] != 0:
+#         #             empty = False
+#         #         curr += delta
+#         #     if currentState.board[x][j] != 0 and empty:
+#         #         new_board = [r[:] for r in currentState.board]
+#         #         new_board[x][j] = sq
+#         #         new_board[i][j] = 0
+#         #         moves.append(BC_state(old_board=new_board, whose_move=1 - currentState.whose_move))
+
+    # if sq // 2 == 1:
+    #     directions = [NORTH, SOUTH, WEST, EAST]
+    # else:
+    #     directions = [NORTH, SOUTH, WEST, EAST, NW, NE, SW, SE]
     # for dir in directions:
     #     spaces = 1
     #
@@ -131,7 +181,7 @@ def piece_noncapture_moves(i, j, currentState):
 
 
 
-
+# [[move, state], [mov]]
 
 def makeMove(currentState, currentRemark, timelimit=10):
     # Compute the new state for a move.
