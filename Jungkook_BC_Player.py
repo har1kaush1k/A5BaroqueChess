@@ -235,3 +235,34 @@ def staticEval(state):
     function could have a significant impact on your player's ability
     to win games.'''
     pass
+
+def checkImmobilized(state, row, col, piece):
+    if state[row][col] is 14 or 15:
+        # checking if the piece is immobilized
+        team = state[row][col] % 2
+        if team != piece % 2:
+            return True
+    return False
+
+# King
+# does not return captured list
+# returns legal move and new state resulting from move
+# does not include imitator
+
+def move_king(currentState, row, col):
+    king = currentState.board[row][col]
+    possibleStates = []
+
+    for i in range (-1, 2):
+        for j in range(-1, 2):
+            if (i != 0 and j!= 0) and 0 <= row + i < 8 and 0 <= col + j < 8:
+                if checkImmobilized(currentState.board, row + i, col + j, king):
+                    return []
+                newState = BC_state(currentState.board)
+                if currentState.board[row+i][col+j] == 0 or \
+                        king % 2 != currentState.board[row+i][col+j] % 2:
+                    newState.board[row+i][col+j] = king
+                    newState.board[row][col] = 0
+                    move = ((row, col), (row+i, row+j))
+                    possibleStates = possibleStates + [move, newState]
+    return possibleStates
