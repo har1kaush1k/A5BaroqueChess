@@ -4,16 +4,26 @@ The beginnings of an agent that might someday play Baroque Chess.
 '''
 
 from BC_state_etc import *
+import time as time
 
 pieces = []
+OPONENT_NAME = ''
+BASIC_REMARKS = []
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
+    # using alpha beta pruning
+    if alphaBeta: 
+        parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
+    else:
+        if ply == 0 and useBasicStaticEval: return basicStaticEval(currentState)
+        
     successors = generate_successors(currentState)
 
     pass
+
 
 def generate_successors(state):
     successors = []
@@ -34,6 +44,7 @@ def is_valid(row, col):
     if 0 <= row < 8 and 0 <= col < 8:
         return True
     return False
+
 
 def move_like_queen(state, row, col):
     piece = state.board[row][col]
@@ -351,6 +362,7 @@ def move_like_queen(state, row, col):
         else:
             checking = False
 
+
 def is_frozen(state, row, col):
     piece = state.board[row][col]
     for i in range(-1, 2):
@@ -360,6 +372,7 @@ def is_frozen(state, row, col):
                     if who(b[row + i][col + j]) != who(piece):
                         return True
     return False
+
 
 def find_kings(state):
     board = state.board
@@ -378,6 +391,97 @@ def find_kings(state):
                 return locs
     return locs
 
+
+def checkImmobilized(state, row, col, piece):
+    if state[row][col] is 14 or 15:
+        # checking if the piece is immobilized
+        if who(state[row][col]) != who(piece) :
+            return True
+    return False
+
+
+# King
+# does not return captured list
+# returns legal moves and new state resulting from move
+# does not include imitator
+def move_king(currentState, row, col):
+    king = currentState.board[row][col]
+    possibleStates = []
+
+    for i in range (-1, 2):
+        for j in range(-1, 2):
+            if (i != 0 and j!= 0) and is_valid(row+i, col+j):
+                if checkImmobilized(currentState.board, row + i, col + j, king):
+                    return []
+                newState = BC_state(currentState.board)
+                # checking imitator capturing king
+                if king == 8 and currentState.board[row+i][col+j] == 13 or
+                        king == 9 and currentState.board[row+i][col+j] == 14:
+                    move = ((row, col), (row+i, col+j))
+                    return [[move, newState]]                      
+                # move king if empty spot next to it or the opposing teams occupying it
+                if king == 13 or king == 14 or currentState.board[row+i][col+j] == 0 or \
+                        who(king) != who(currentState.board[row+i][col+j])):
+                    # update new position with king and remove the original
+                    newState.board[row+i][col+j] = king
+                    newState.board[row][col] = 0
+                    move = ((row, col), (row+i, col+j))
+                    possibleStates = possibleStates + [move, newState]
+    return possibleStates
+
+
+# Pincer
+# does not return captured list
+# returns legal moves and new state resulting from move
+# removes captured pieces from the board
+# does not include imitator
+def move_pincer(currentState, row, col):
+    pincer = currentState.board[row][col]
+    possibleStates = []
+
+    for i in range(-7, 8):
+        for j in range(-7, 8):
+            # pincer only can move vertically and horizontally like a rook in chess
+            if (i != 0 and j= 0 or i = 0 and j!= 0) and is_valid(row+i, col+j):
+                if checkImmobilized(currentState.board, row + i, col + j, pincer):
+                    return []
+                newState = BC_state(currentState.board)
+                # check imitator capturing pincer
+                if pincer == 8 and currentState.board[row+i][col+j] == 3 
+                        or pincer == 9 and currentState.board[row+i][col+j] == 2:
+                    move = ((row, col), (row+i, col+j))
+                    return [[move, pincer_capture(newState, row+i, col+j)]] 
+                if currentState.board[row+i][col+j] == 0:
+                    # update new position with pincer and remove the original
+                    newState.board[row+i][col+j] = pincer
+                    newState.board[row][col] = 0
+                    # store the move made
+                    move = ((row, col), (row+i, col+j))
+                    # remove the captured pieces on the board with pincer at new location
+                    newState = pincer_capture(newState, row+i, col+j)
+                    # add [move, new state] to possible states for that piece
+                    possibleStates = possibleStates + [move, newState]
+    # return all possible states for the board
+    return possibleStates
+
+
+def pincer_capture(newState, row, col):
+    updatedBoard = BC_state(newState.board)
+    for i in range (-1, 2):
+        for j in range (-1, 2):
+            # only can capture vertically and horizontally
+            if i != 0 and j = 0 or i = 0 and j!= 0:
+                if 0 <= row + 2*i < 8 and 0 <= col + 2*j < 8:
+                    if updatedBoard.board[row+i][col+j] != 0 and 
+                            who(updatedBoard.board[row+2*i][col+2*j]) == 
+                                    who(updatedBoard.board[row][col]):
+                        # captured
+                        updatedBoard.board[row+i][col+j] = 0
+    # return same board if no captures
+    # or new board with all the captured pieces removed 
+    return updatedBoard
+
+
 def makeMove(currentState, currentRemark, timelimit=10):
     # Compute the new state for a move.
     # You should implement an anytime algorithm based on IDDFS.
@@ -387,7 +491,10 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
     # Fix up whose turn it will be.
     newState.whose_move = 1 - currentState.whose_move
-
+    
+    startTime = time.perf_counter()
+    while time.perf_counter()-startTime < time_limit - float(.1):
+        
     # Construct a representation of the move that goes from the
     # currentState to the newState.
     # Here is a placeholder in the right format but with made-up
@@ -406,7 +513,7 @@ def nickname():
 
 def introduce():
     return "I'm Jungkook from BTS, a newbie Baroque Chess agent. " \
-           "I was created by Hari Kaushik (harik98@uw.edu) and Lisa Qing (@uw.edu)!"
+           "I was created by Hari Kaushik (harik98@uw.edu) and Lisa Qing (lisaq2@uw.edu)!"
 
 
 def prepare(player2Nickname):
@@ -414,7 +521,18 @@ def prepare(player2Nickname):
     the opponent agent, in case your agent can use it in some of
     the dialog responses.  Other than that, this function can be
     used for initializing data structures, if needed.'''
-    pass
+    OPONENT_NAME = player2Nickname
+
+    # Additional remarks added in can move regarding to what moves are being made
+    BASIC_REMARKS = ["I hope this game turns out well for me...," + OPONENT_NAME + ".",
+                    "This game is getting kind of intense, " + OPONENT_NAME + ".", 
+                    "I hope you're having fun, " + OPONENT_NAME + ".",
+                    "Wow. I'm getting tired already...",
+                    "Why don't you practice some more befor challenging me again.",
+                    "Can you do any better?", 
+                    "Sorry, I'm just too good.",
+                    "Can you make this more interesting? I'm getting bored."]
+
 
 
 def basicStaticEval(state):
@@ -451,96 +569,11 @@ def pieceVal(piece):
         return 0
 
 def staticEval(state):
+    currentState = state.board
+    
     '''Compute a more thorough static evaluation of the given state.
     This is intended for normal competitive play.  How you design this
     function could have a significant impact on your player's ability
     to win games.'''
     pass
 
-def checkImmobilized(state, row, col, piece):
-    if state[row][col] is 14 or 15:
-        # checking if the piece is immobilized
-        if who(state[row][col]) != who(piece) :
-            return True
-    return False
-
-# King
-# does not return captured list
-# returns legal moves and new state resulting from move
-# does not include imitator
-
-def move_king(currentState, row, col):
-    king = currentState.board[row][col]
-    possibleStates = []
-
-    for i in range (-1, 2):
-        for j in range(-1, 2):
-            if (i != 0 and j!= 0) and 0 <= row + i < 8 and 0 <= col + j < 8:
-                if checkImmobilized(currentState.board, row + i, col + j, king):
-                    return []
-                newState = BC_state(currentState.board)
-                # checking imitator capturing king
-                if king == 8 and currentState.board[row+i][col+j] == 13 or
-                        king == 9 and currentState.board[row+i][col+j] == 14:
-                    move = ((row, col), (row+i, col+j))
-                    return [[move, newState]]                      
-                # move king if empty spot next to it or the opposing teams occupying it
-                if king == 13 or king == 14 or currentState.board[row+i][col+j] == 0 or \
-                        who(king) != who(currentState.board[row+i][col+j])):
-                    # update new position with king and remove the original
-                    newState.board[row+i][col+j] = king
-                    newState.board[row][col] = 0
-                    move = ((row, col), (row+i, col+j))
-                    possibleStates = possibleStates + [move, newState]
-    return possibleStates
-
-# Pincer
-# does not return captured list
-# returns legal moves and new state resulting from move
-# removes captured pieces from the board
-# does not include imitator
-
-def move_pincer(currentState, row, col):
-    pincer = currentState.board[row][col]
-    possibleStates = []
-
-    for i in range(-7, 8):
-        for j in range(-7, 8):
-            # pincer only can move vertically and horizontally like a rook in chess
-            if (i != 0 and j= 0 or i = 0 and j!= 0) and 0 <= row + i < 8 and 0 <= col + j < 8:
-                if checkImmobilized(currentState.board, row + i, col + j, pincer):
-                    return []
-                newState = BC_state(currentState.board)
-                # check imitator capturing pincer
-                if pincer == 8 and currentState.board[row+i][col+j] == 3 
-                        or pincer == 9 and currentState.board[row+i][col+j] == 2:
-                    move = ((row, col), (row+i, col+j))
-                    return [[move, pincer_capture(newState, row+i, col+j)]] 
-                if currentState.board[row+i][col+j] == 0:
-                    # update new position with pincer and remove the original
-                    newState.board[row+i][col+j] = pincer
-                    newState.board[row][col] = 0
-                    # store the move made
-                    move = ((row, col), (row+i, col+j))
-                    # remove the captured pieces on the board with pincer at new location
-                    newState = pincer_capture(newState, row+i, col+j)
-                    # add [move, new state] to possible states for that piece
-                    possibleStates = possibleStates + [move, newState]
-    # return all possible states for the board
-    return possibleStates
-
-def pincer_capture(newState, row, col):
-    updatedBoard = BC_state(newState.board)
-    for i in range (-1, 2):
-        for j in range (-1, 2):
-            # only can capture vertically and horizontally
-            if i != 0 and j = 0 or i = 0 and j!= 0:
-                if 0 <= row + 2*i < 8 and 0 <= col + 2*j < 8:
-                    if updatedBoard.board[row+i][col+j] != 0 and 
-                            who(updatedBoard.board[row+2*i][col+2*j]) == 
-                                    who(updatedBoard.board[row][col]):
-                        # captured
-                        updatedBoard.board[row+i][col+j] = 0
-    # return same board if no captures
-    # or new board with all the captured pieces removed 
-    return updatedBoard
