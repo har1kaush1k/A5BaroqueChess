@@ -15,12 +15,19 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
 
     pass
 
-def generate_successors(currentState):
+def generate_successors(state):
     successors = []
-    for i in range(8):
-        for j in range(8):
-            sq = currentState.board[i][j]
+    for row in range(8):
+        for col in range(8):
+            piece = state.board[i][j]
             # if who(sq) == currentState.whose_move and sq > 0:
+            if who(piece) == state.whose_move and piece > 0 and not is_frozen(state, row, col):
+                if piece == WHITE_PINCER or piece == BLACK_PINCER:
+                    successors = successors + move_pincer(state, row, col)
+                if piece == WHITE_KING or piece == BLACK_KING:
+                    successors = move_king(state, row, col)
+                if piece > 3 and piece != 8 and piece != 9 and piece != 12 and piece != 13:
+                    successors = move_like_queen(state, row, col)
 
 
 def is_valid(row, col):
@@ -28,152 +35,278 @@ def is_valid(row, col):
         return True
     return False
 
-# def move_coordinator(state, row, col):
-#     piece = state.board[row][col]
-#     board = state.board
-#     kings = find_kings(state)
-#     kingX = kings[0]
-#     kingY = kings[1]
-#     whose = who(piece)
-#     newState = BC_state(board)
-#     successors = []
-#     captures = []
-
-#     checking = True
-#     move = 1
-
-#     while checking:
-#         kill = False
-#         temp = BC_state(state.board)
-#         if not is_valid(row + move, col) or newState.board[row + move][col] != 0:
-#             break
-#         temp.board[row + move][col] = temp.board[row][col]
-#         temp.board[row][col] = 0
-#         #if piece is 4 or piece is 5:
-        
-#     pass
-
 def move_like_queen(state, row, col):
     piece = state.board[row][col]
     board = state.board
     kings = find_kings(state)
-    kingX = kings[0]
-    kingY = kings[1]
+    king_row = kings[0]
+    king_col = kings[1]
     whose = who(piece)
-    newState = BC_state(board)
     successors = []
     captures = []
 
     checking = True
     move = 1
 
-    if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
-        successors = successors + coord_capture(state, row, col)
-        successors = successors + noncapture_moves(state, row, col)
-
-def noncapture_moves(state, row, col):
-    piece = state.board[row][col]
-    whose = who(piece)
-    successors = []
-    checking = True
-    move = 1
-    # Moves in South direction
+    # Moves in S direction
     while checking:
         newState = BC_state(state.board)
-        if is_valid(row, col+move) and temp.board[row][col + move] == 0:
-            newState.board[row][col + move] = piece
-            newState.board[row][col] = 0
-            new_move = ((row, col), (row, col + move))
+        if is_valid(row + move, col) and newState.board[row + move][col] == 0:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+                newState.board[row + move][col] = piece
+                newState.board[row][col] = 0
+                if newState.board[king_row][col] != 0 and who(newState.board[king_row][col]) != whose:
+                    newState.board[king_row][col] = 0
+                if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
+                    newState.board[row + move][king_col] = 0
+            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                newState.board[row + move][col] = piece
+                newState.board[row][col] = 0
+                if row - 1 > -1 and newState.board[row - 1][col] != 0 and who(newState.board[row - 1][col]) != whose:
+                    newState.board[row - 1][col] = 0
+            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+                new_row = row + move
+                new_col = col
+                if newState.board[new_row + 1][new_col] != 0 and who(newState.board[new_row + 1][new_col]) != whose:
+                    if is_valid(new_row + 2, new_col) and newState.board[new_row + 2][new_col] == 0:
+                        newState.board[new_row + 1][new_col] = 0
+                        new_row += 2
+                newState.board[new_row][new_col] = piece
+                newState.board[row][col] = 0
+            else:
+                newState.board[row + move][col] = piece
+                newState.board[row][col] = 0
+            new_move = ((row, col), (row + move, col))
             temp = BC_state(newState.board)
             successors = successors + [[new_move, temp]]
-            move += 1
         else:
             checking = False
+        move += 1
     
     checking = True
     move = 1
     # Moves in SW direction
     while checking:
         newState = BC_state(state.board)
-        if is_valid(row - move, col + move) and temp.board[row - move][col + move] == 0:
-            newState.board[row - move][col + move] = piece
-            newState.board[row][col] = 0
-            new_move = ((row, col), (row - move, col + move))
+        if is_valid(row + move, col - move) and newState.board[row + move][col - move] == 0:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+                newState.board[row + move][col - move] = piece
+                newState.board[row][col] = 0
+                if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
+                    newState.board[king_row][col - move] = 0
+                if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
+                    newState.board[row + move][king_col] = 0
+            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                newState.board[row + move][col - move] = piece
+                newState.board[row][col] = 0
+                if newState.board[row - 1][col + 1] != 0 and who(newState.board[row - 1][col + 1]) != whose:
+                    newState.board[row - 1][col + 1] = 0
+            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+                new_row = row + move
+                new_col = col - move
+                if newState.board[new_row + 1][new_col - 1] != 0 and who(newState.board[new_row + 1][new_col - 1]) != whose:
+                    if is_valid(new_row + 2, new_col - 2) and newState.board[new_row + 2][new_col - 2] == 0:
+                        newState.board[new_row + 1][new_col - 1] = 0
+                        new_row += 2
+                        new_col -= 2
+                newState.board[new_row][new_col] = piece
+                newState.board[row][col] = 0
+            else:
+                newState.board[row + move][col - move] = piece
+                newState.board[row][col] = 0
+            new_move = ((row, col), (row + move, col - move))
             temp = BC_state(newState.board)
             successors = successors + [[new_move, temp]]
-            move += 1
+            
         else:
             checking = False
+        move += 1
     
     checking = True
     move = 1
     # Moves in W direction
     while checking:
         newState = BC_state(state.board)
-        if is_valid(row - move, col) and temp.board[row - move][col] == 0:
-            newState.board[row - move][col] = piece
-            newState.board[row][col] = 0
-            new_move = ((row, col), (row - move, col))
+        if is_valid(row, col - move) and newState.board[row][col - move] == 0:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+                newState.board[row][col - move] = piece
+                newState.board[row][col] = 0
+                if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
+                    newState.board[king_row][col - move] = 0
+                if newState.board[row][king_col] != 0 and who(newState.board[row][king_col]) != whose:
+                    newState.board[row][king_col] = 0
+            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                newState.board[row][col - move] = piece
+                newState.board[row][col] = 0
+                if newState.board[row][col + 1] != 0 and who(newState.board[row][col + 1]) != whose:
+                    newState.board[row][col + 1] = 0
+            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+                new_row = row
+                new_col = col - move
+                if newState.board[new_row][new_col - 1] != 0 and who(newState.board[new_row][new_col - 1]) != whose:
+                    if is_valid(new_row, new_col - 2) and newState.board[new_row][new_col - 2] == 0:
+                        newState.board[new_row][new_col - 1] = 0
+                        new_col -= 2
+                newState.board[new_row][new_col] = piece
+                newState.board[row][col] = 0
+            else:
+                newState.board[row][col - move] = piece
+                newState.board[row][col] = 0
+            new_move = ((row, col), (row, col - move))
             temp = BC_state(newState.board)
             successors = successors + [[new_move, temp]]
-            move += 1
+            
         else:
             checking = False
+        move += 1
     
     checking = True
     move = 1
     # Moves in NW direction
     while checking:
         newState = BC_state(state.board)
-        if is_valid(row - move, col - move) and temp.board[row - move][col - move] == 0:
-            newState.board[row - move][col - move] = piece
-            newState.board[row][col] = 0
+        if is_valid(row - move, col - move) and newState.board[row - move][col - move] == 0:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+                newState.board[row - move][col - move] = piece
+                newState.board[row][col] = 0
+                if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
+                    newState.board[king_row][col - move] = 0
+                if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
+                    newState.board[row - move][king_col] = 0
+            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                newState.board[row - move][col - move] = piece
+                newState.board[row][col] = 0
+                if newState.board[row + 1][col + 1] != 0 and who(newState.board[row + 1][col + 1]) != whose:
+                    newState.board[row + 1][col + 1] = 0
+            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+                new_row = row - move
+                new_col = col - move
+                if newState.board[new_row - 1][new_col - 1] != 0 and who(newState.board[new_row - 1][new_col - 1]) != whose:
+                    if is_valid(new_row - 2, new_col - 2) and newState.board[new_row - 2][new_col - 2] == 0:
+                        newState.board[new_row - 1][new_col - 1] = 0
+                        new_col -= 2
+                        new_row -= 2
+                newState.board[new_row][new_col] = piece
+                newState.board[row][col] = 0
+            else:
+                newState.board[row - move][col - move] = piece
+                newState.board[row][col] = 0
             new_move = ((row, col), (row - move, col - move))
             temp = BC_state(newState.board)
             successors = successors + [[new_move, temp]]
-            move += 1
+            
         else:
             checking = False
+        move += 1
     
     checking = True
     move = 1
     # Moves in N direction
     while checking:
         newState = BC_state(state.board)
-        if is_valid(row, col - move) and temp.board[row][col - move] == 0:
-            newState.board[row][col - move] = piece
-            newState.board[row][col] = 0
-            new_move = ((row, col), (row, col - move))
+        if is_valid(row - move, col) and newState.board[row - move][col] == 0:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+                newState.board[row - move][col] = piece
+                newState.board[row][col] = 0
+                if newState.board[king_row][col] != 0 and who(newState.board[king_row][col]) != whose:
+                    newState.board[king_row][col] = 0
+                if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
+                    newState.board[row - move][king_col] = 0
+            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                newState.board[row - move][col] = piece
+                newState.board[row][col] = 0
+                if newState.board[row + 1][col] != 0 and who(newState.board[row + 1][col]) != whose:
+                    newState.board[row + 1][col] = 0
+            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+                new_row = row - move
+                new_col = col
+                if newState.board[new_row - 1][new_col] != 0 and who(newState.board[new_row - 1][new_col]) != whose:
+                    if is_valid(new_row - 2, new_col) and newState.board[new_row - 2][new_col] == 0:
+                        newState.board[new_row - 1][new_col] = 0
+                        new_row -= 2
+                newState.board[new_row][new_col] = piece
+                newState.board[row][col] = 0
+            else:
+                newState.board[row - move][col] = piece
+                newState.board[row][col] = 0
+            new_move = ((row, col), (row - move, col))
             temp = BC_state(newState.board)
             successors = successors + [[new_move, temp]]
-            move += 1
+            
         else:
             checking = False
+        move += 1
     
     checking = True
     move = 1
     # Moves in NE direction
     while checking:
         newState = BC_state(state.board)
-        if is_valid(row + move, col - move) and temp.board[row + move][col - move] == 0:
-            newState.board[row + move][col - move] = piece
-            newState.board[row][col] = 0
-            new_move = ((row, col), (row + move, col - move))
+        if is_valid(row - move, col + move) and newState.board[row - move][col + move] == 0:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+                newState.board[row - move][col + move] = piece
+                newState.board[row][col] = 0
+                if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
+                    newState.board[king_row][col + move] = 0
+                if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
+                    newState.board[row - move][king_col] = 0
+            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                newState.board[row - move][col + move] = piece
+                newState.board[row][col] = 0
+                if newState.board[row + 1][col - 1] != 0 and who(newState.board[row + 1][col - 1]) != whose:
+                    newState.board[row + 1][col - 1] = 0
+            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+                new_row = row - move
+                new_col = col + move
+                if newState.board[new_row - 1][new_col + 1] != 0 and who(newState.board[new_row - 1][new_col + 1]) != whose:
+                    if is_valid(new_row - 2, new_col + 2) and newState.board[new_row - 2][new_col + 2] == 0:
+                        newState.board[new_row - 1][new_col + 1] = 0
+                        new_row -= 2
+                        new_col += 2
+                newState.board[new_row][new_col] = piece
+                newState.board[row][col] = 0
+            else:
+                newState.board[row - move][col + move] = piece
+                newState.board[row][col] = 0
+            new_move = ((row, col), (row - move, col + move))
             temp = BC_state(newState.board)
             successors = successors + [[new_move, temp]]
-            move += 1
+            
         else:
             checking = False
+        move += 1
     
     checking = True
     move = 1
     # Moves in E direction
     while checking:
         newState = BC_state(state.board)
-        if is_valid(row + move, col) and temp.board[row + move][col] == 0:
-            newState.board[row + move][col] = piece
-            newState.board[row][col] = 0
-            new_move = ((row, col), (row + move, col))
+        if is_valid(row, col + move) and newState.board[row][col + move] == 0:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+                newState.board[row][col + move] = piece
+                newState.board[row][col] = 0
+                if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
+                    newState.board[king_row][col + move] = 0
+                if newState.board[row][king_col] != 0 and who(newState.board[row][king_col]) != whose:
+                    newState.board[row][king_col] = 0
+            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                newState.board[row][col + move] = piece
+                newState.board[row][col] = 0
+                if newState.board[row][col - 1] != 0 and who(newState.board[row][col - 1]) != whose:
+                    newState.board[row][col - 1] = 0
+            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+                new_row = row
+                new_col = col + move
+                if newState.board[new_row][new_col + 1] != 0 and who(newState.board[new_row][new_col + 1]) != whose:
+                    if is_valid(new_row, new_col + 2) and newState.board[new_row][new_col + 2] == 0:
+                        newState.board[new_row][new_col + 1] = 0
+                        new_col += 2
+                newState.board[new_row][new_col] = piece
+                newState.board[row][col] = 0
+            else:
+                newState.board[row][col + move] = piece
+                newState.board[row][col] = 0
+            new_move = ((row, col), (row, col + move))
             temp = BC_state(newState.board)
             successors = successors + [[new_move, temp]]
             move += 1
@@ -185,9 +318,32 @@ def noncapture_moves(state, row, col):
     # Moves in SE direction
     while checking:
         newState = BC_state(state.board)
-        if is_valid(row + move, col + move) and temp.board[row + move][col + move] == 0:
-            newState.board[row + move][col + move] = piece
-            newState.board[row][col] = 0
+        if is_valid(row + move, col + move) and newState.board[row + move][col + move] == 0:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+                newState.board[row + move][col + move] = piece
+                newState.board[row][col] = 0
+                if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
+                    newState.board[king_row][col + move] = 0
+                if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
+                    newState.board[row + move][king_col] = 0
+            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                newState.board[row + move][col + move] = piece
+                newState.board[row][col] = 0
+                if newState.board[row - 1][col - 1] != 0 and who(newState.board[row - 1][col - 1]) != whose:
+                    newState.board[row - 1][col - 1] = 0
+            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+                new_row = row + move
+                new_col = col + move
+                if newState.board[new_row + 1][new_col + 1] != 0 and who(newState.board[new_row + 1][new_col + 1]) != whose:
+                    if is_valid(new_row + 2, new_col + 2) and newState.board[new_row + 2][new_col + 2] == 0:
+                        newState.board[new_row + 1][new_col + 1] = 0
+                        new_row += 2
+                        new_col += 2
+                newState.board[new_row][new_col] = piece
+                newState.board[row][col] = 0
+            else:
+                newState.board[row + move][col + move] = piece
+                newState.board[row][col] = 0
             new_move = ((row, col), (row + move, col + move))
             temp = BC_state(newState.board)
             successors = successors + [[new_move, temp]]
@@ -195,9 +351,15 @@ def noncapture_moves(state, row, col):
         else:
             checking = False
 
-    
-def coord_capture(state, row, col):
-    pass
+def is_frozen(state, row, col):
+    piece = state.board[row][col]
+    for i in range(-1, 2):
+        for j in range(-1, 2):
+            if (i != 0 and j != 0) and is_valid(row + i, col + j):
+                if b[row + i][col + j] == 15 or b[row + i][col + j] == 14:
+                    if who(b[row + i][col + j]) != who(piece):
+                        return True
+    return False
 
 def find_kings(state):
     board = state.board
@@ -206,7 +368,7 @@ def find_kings(state):
         for col in range(8):
             piece = board[row][col]
             if piece == 12 or piece == 13:
-                if who(piece) == state.whose_turn:
+                if who(piece) == state.whose_move:
                     locs[0] = row
                     locs[1] = col
                 else:
@@ -269,19 +431,19 @@ def basicStaticEval(state):
 
 def pieceVal(piece):
 	# black pieces
-	if state == ‘p’:
+    if piece == 'p':
 		return -1
-	elif state == ‘k’:
+	elif piece == '‘k':
 		return -100
-	elif state.isLowerCase():
+	elif piece.isLowerCase():
 		return -2
 
 	# white pieces
-	elif state == ‘P’:
+	elif piece == ‘P’:
 		return 1
-	elif state == ‘K’:
+	elif piece == ‘K’:
 		return 100
-	elif state.isUpperCase():
+	elif piece.isUpperCase():
 		return 2
 
     # empty spaces
