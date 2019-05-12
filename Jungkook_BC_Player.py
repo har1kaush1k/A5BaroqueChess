@@ -9,19 +9,40 @@ import time as time
 pieces = []
 OPONENT_NAME = ''
 BASIC_REMARKS = []
+MAX_PLY = 3
+CURRENT_STATE_STATIC_VAL = 0
+N_STATES_EXPANDED = 0
+N_STATIC_EVALS = 0
+N_CUTOFFS = 0
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
+    
     # using alpha beta pruning
     if alphaBeta: 
-        parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
+        provisional = parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
     else:
-        if ply == 0 and useBasicStaticEval: return basicStaticEval(currentState)
-        
-    successors = generate_successors(currentState)
+        if ply == 0 and useBasicStaticEval: 
+            N_STATIC_EVALS = N_STATIC_EVALS + 1
+            return basicStaticEval(currentState)
+        if ply % 2 == MAX_PLY % 2: provisional = -100000
+        else: provisional = 100000
+        successors = generate_successors(currentState)
+        successors = sorted(successors, key = lambda k: [k[0], k[1]])
+        for s in successors:
+            N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+            newVal = parameterized_minimax(currentState, alphaBeta, ply-1, useBasicStaticEval, useZobristHashing)
+            if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
+                provisional = newVal
+    return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED , 
+                                                "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
 
+    pass
+
+
+def parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval=True, useZobristHashing=False):
     pass
 
 
@@ -38,6 +59,7 @@ def generate_successors(state):
                     successors = move_king(state, row, col)
                 if piece > 3 and piece != 8 and piece != 9 and piece != 12 and piece != 13:
                     successors = move_like_queen(state, row, col)
+    return successors
 
 
 def is_valid(row, col):
@@ -442,7 +464,7 @@ def move_pincer(currentState, row, col):
     for i in range(-7, 8):
         for j in range(-7, 8):
             # pincer only can move vertically and horizontally like a rook in chess
-            if (i != 0 and j= 0 or i = 0 and j!= 0) and is_valid(row+i, col+j):
+            if (i != 0 and j == 0 or i == 0 and j!= 0) and is_valid(row+i, col+j):
                 if checkImmobilized(currentState.board, row + i, col + j, pincer):
                     return []
                 newState = BC_state(currentState.board)
@@ -470,7 +492,7 @@ def pincer_capture(newState, row, col):
     for i in range (-1, 2):
         for j in range (-1, 2):
             # only can capture vertically and horizontally
-            if i != 0 and j = 0 or i = 0 and j!= 0:
+            if i != 0 and j == 0 or i == 0 and j!= 0:
                 if 0 <= row + 2*i < 8 and 0 <= col + 2*j < 8:
                     if updatedBoard.board[row+i][col+j] != 0 and 
                             who(updatedBoard.board[row+2*i][col+2*j]) == 
@@ -542,7 +564,7 @@ def basicStaticEval(state):
 
 	# The value of the function is the sum of the values of the pieces on the board in the given state
 	total = 0
-	for row in state:
+	for row in state.board:
 		for col in row:
 			total = total + pieceVal(col)
 
