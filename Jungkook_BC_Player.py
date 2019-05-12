@@ -435,21 +435,22 @@ def checkImmobilized(state, row, col, piece):
 def move_king(currentState, row, col):
     king = currentState.board[row][col]
     possibleStates = []
-
-    for i in range (-1, 2):
+    for i in range(-1, 2):
         for j in range(-1, 2):
-            if (i != 0 and j!= 0) and is_valid(row+i, col+j):
+            if is_valid(row+i, col+j):
                 if checkImmobilized(currentState.board, row + i, col + j, king):
                     return []
                 newState = BC_state(currentState.board)
                 # checking imitator capturing king
                 if king == 8 and currentState.board[row+i][col+j] == 13 or \
-                        king == 9 and currentState.board[row+i][col+j] == 14:
+                        king == 9 and currentState.board[row+i][col+j] == 12:
                     move = ((row, col), (row+i, col+j))
+                    newState.board[row+i][col+j] = king
+                    newState.board[row][col] = 0
                     return [[move, newState]]                      
                 # move king if empty spot next to it or the opposing teams occupying it
-                if king == 13 or king == 14 or currentState.board[row+i][col+j] == 0 or \
-                        who(king) != who(currentState.board[row+i][col+j]):
+                if (king == 12 or king == 13) and (currentState.board[row+i][col+j] == 0 or \
+                        who(king) != who(currentState.board[row+i][col+j])):
                     # update new position with king and remove the original
                     newState.board[row+i][col+j] = king
                     newState.board[row][col] = 0
@@ -510,9 +511,15 @@ def pincer_capture(newState, row, col):
         for j in range (-1, 2):
             # only can capture vertically and horizontally
             if i != 0 and j == 0 or i == 0 and j!= 0:
-                if 0 <= row + 2*i < 8 and 0 <= col + 2*j < 8:
+                if j == 0:
+                    checkRow = row + 2 * i
+                    checkCol = col + j
+                elif i == 0:
+                    checkRow = row + i
+                    checkCol = col + 2 * j
+                if 0 <= checkRow < 8 and 0 <= checkCol < 8:
                     if updatedBoard.board[row+i][col+j] != 0 and \
-                            who(updatedBoard.board[row+2*i][col+2*j]) == who(updatedBoard.board[row][col]) and \
+                            who(updatedBoard.board[checkRow][checkCol]) == who(updatedBoard.board[row][col]) and \
                             who(updatedBoard.board[row+i][col+j]) != who(updatedBoard.board[row][col]):
                         # captured
                         updatedBoard.board[row+i][col+j] = 0
