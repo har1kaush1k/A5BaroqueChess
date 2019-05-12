@@ -19,9 +19,12 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
+    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL
     
     # using alpha beta pruning
-    if alphaBeta: 
+    if alphaBeta:
+        alpha = +100000
+        beta = -100000
         provisional = parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
     else:
         if ply == 0 and useBasicStaticEval: 
@@ -50,7 +53,7 @@ def generate_successors(state):
     successors = []
     for row in range(8):
         for col in range(8):
-            piece = state.board[i][j]
+            piece = state.board[row][col]
             # if who(sq) == currentState.whose_move and sq > 0:
             if who(piece) == state.whose_move and piece > 0 and not is_frozen(state, row, col):
                 if piece == WHITE_PINCER or piece == BLACK_PINCER:
@@ -59,6 +62,8 @@ def generate_successors(state):
                     successors = move_king(state, row, col)
                 if piece > 3 and piece != 8 and piece != 9 and piece != 12 and piece != 13:
                     successors = move_like_queen(state, row, col)
+            #print(successors)
+
     return successors
 
 
@@ -390,6 +395,7 @@ def is_frozen(state, row, col):
     for i in range(-1, 2):
         for j in range(-1, 2):
             if (i != 0 and j != 0) and is_valid(row + i, col + j):
+                b = state.board
                 if b[row + i][col + j] == 15 or b[row + i][col + j] == 14:
                     if who(b[row + i][col + j]) != who(piece):
                         return True
@@ -437,13 +443,13 @@ def move_king(currentState, row, col):
                     return []
                 newState = BC_state(currentState.board)
                 # checking imitator capturing king
-                if king == 8 and currentState.board[row+i][col+j] == 13 or
+                if king == 8 and currentState.board[row+i][col+j] == 13 or \
                         king == 9 and currentState.board[row+i][col+j] == 14:
                     move = ((row, col), (row+i, col+j))
                     return [[move, newState]]                      
                 # move king if empty spot next to it or the opposing teams occupying it
                 if king == 13 or king == 14 or currentState.board[row+i][col+j] == 0 or \
-                        who(king) != who(currentState.board[row+i][col+j])):
+                        who(king) != who(currentState.board[row+i][col+j]):
                     # update new position with king and remove the original
                     newState.board[row+i][col+j] = king
                     newState.board[row][col] = 0
@@ -468,12 +474,23 @@ def move_pincer(currentState, row, col):
                 if checkImmobilized(currentState.board, row + i, col + j, pincer):
                     return []
                 newState = BC_state(currentState.board)
+
                 # check imitator capturing pincer
-                if pincer == 8 and currentState.board[row+i][col+j] == 3 
-                        or pincer == 9 and currentState.board[row+i][col+j] == 2:
-                    move = ((row, col), (row+i, col+j))
-                    return [[move, pincer_capture(newState, row+i, col+j)]] 
-                if currentState.board[row+i][col+j] == 0:
+                if (pincer == 8 or pincer == 9) and currentState.board[row+i][col+j] == 0:
+                    if j == 0:
+                        checkRow = row + i + 1
+                        checkCol = col + j
+                    if i == 0:
+                        checkRow = row + i
+                        checkCol = col + j + 1
+                    if is_valid(checkRow, checkCol):
+                        if currentState.board[checkRow][checkCol] == 3:
+                            newState.board[row + i][col + j] = pincer
+                            newState.board[row][col] = 0
+                            newState = pincer_capture(newState, row+i, col+j)
+                            move = ((row, col), (row+i, col+j))
+                            return [[move, newState]]
+                if currentState.board[row+i][col+j] == 0 and pincer != 8 and pincer != 9:
                     # update new position with pincer and remove the original
                     newState.board[row+i][col+j] = pincer
                     newState.board[row][col] = 0
@@ -494,9 +511,9 @@ def pincer_capture(newState, row, col):
             # only can capture vertically and horizontally
             if i != 0 and j == 0 or i == 0 and j!= 0:
                 if 0 <= row + 2*i < 8 and 0 <= col + 2*j < 8:
-                    if updatedBoard.board[row+i][col+j] != 0 and 
-                            who(updatedBoard.board[row+2*i][col+2*j]) == 
-                                    who(updatedBoard.board[row][col]):
+                    if updatedBoard.board[row+i][col+j] != 0 and \
+                            who(updatedBoard.board[row+2*i][col+2*j]) == who(updatedBoard.board[row][col]) and \
+                            who(updatedBoard.board[row+i][col+j]) != who(updatedBoard.board[row][col]):
                         # captured
                         updatedBoard.board[row+i][col+j] = 0
     # return same board if no captures
@@ -515,12 +532,13 @@ def makeMove(currentState, currentRemark, timelimit=10):
     newState.whose_move = 1 - currentState.whose_move
     
     startTime = time.perf_counter()
-    while time.perf_counter()-startTime < time_limit - float(.1):
+    #while time.perf_counter()-startTime < timelimit - float(.1):
         
     # Construct a representation of the move that goes from the
     # currentState to the newState.
     # Here is a placeholder in the right format but with made-up
     # numbers:
+
     move = ((6, 4), (3, 4))
 
     # Make up a new remark
@@ -598,4 +616,3 @@ def staticEval(state):
     function could have a significant impact on your player's ability
     to win games.'''
     pass
-
