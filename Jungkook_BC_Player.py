@@ -431,24 +431,24 @@ def basicStaticEval(state):
 
 def pieceVal(piece):
 	# black pieces
-    if piece == 'p':
-		return -1
-	elif piece == '‘k':
-		return -100
-	elif piece.isLowerCase():
-		return -2
+    if piece == BLACK_PINCER:
+        return -1
+    elif piece == BLACK_KING:
+        return -100
+    elif who(piece) == BLACK:
+        return -2
 
 	# white pieces
-	elif piece == ‘P’:
-		return 1
-	elif piece == ‘K’:
-		return 100
-	elif piece.isUpperCase():
-		return 2
+    elif piece == WHITE_PINCER:
+        return 1
+    elif piece == WHITE_KING:
+        return 100
+    elif who(piece) == WHITE:
+        return 2
 
     # empty spaces
-	else:
-		return 0
+    else:
+        return 0
 
 def staticEval(state):
     '''Compute a more thorough static evaluation of the given state.
