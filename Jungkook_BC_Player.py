@@ -15,34 +15,48 @@ N_STATES_EXPANDED = 0
 N_STATIC_EVALS = 0
 N_CUTOFFS = 0
 
+
 def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
     global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL
-    
+
     # using alpha beta pruning
     if alphaBeta:
         alpha = +100000
         beta = -100000
         provisional = parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
     else:
-        if ply == 0 and useBasicStaticEval: 
-            N_STATIC_EVALS = N_STATIC_EVALS + 1
-            return basicStaticEval(currentState)
-        if ply % 2 == MAX_PLY % 2: provisional = -100000
-        else: provisional = 100000
-        successors = generate_successors(currentState)
-        successors = sorted(successors, key = lambda k: [k[0], k[1]])
-        for s in successors:
-            N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-            newVal = parameterized_minimax(currentState, alphaBeta, ply-1, useBasicStaticEval, useZobristHashing)
-            if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
-                provisional = newVal
-    return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED , 
-                                                "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
+        provisional = minimaxHelper(currentState, ply, useBasicStaticEval, useZobristHashing)
 
-    pass
+    return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED,
+            "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
+
+
+
+def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=False):
+    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL
+
+    if ply == 0 and useBasicStaticEval:
+        N_STATIC_EVALS = N_STATIC_EVALS + 1
+        print(basicStaticEval(currentState))
+        return basicStaticEval(currentState)
+    if ply % 2 == MAX_PLY % 2:
+        provisional = -100000
+    else:
+        provisional = 100000
+    successors = generate_successors(currentState)
+    # Problem in sorting: bc state is not subscriptable
+    # successors = sorted(successors, key=lambda k: [k[0], k[1]])
+    for s in successors:
+        N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+        # how to pass in just the state of successors of form [(move, move), newstate]
+        newVal = minimaxHelper(s, ply - 1)
+        if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
+            provisional = newVal
+
+    return provisional
 
 
 def parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval=True, useZobristHashing=False):
@@ -59,11 +73,9 @@ def generate_successors(state):
                 if piece == WHITE_PINCER or piece == BLACK_PINCER:
                     successors = successors + move_pincer(state, row, col)
                 if piece == WHITE_KING or piece == BLACK_KING:
-                    successors = move_king(state, row, col)
+                    successors = successors + move_king(state, row, col)
                 if piece > 3 and piece != 8 and piece != 9 and piece != 12 and piece != 13:
-                    successors = move_like_queen(state, row, col)
-            #print(successors)
-
+                    successors = successors + move_like_queen(state, row, col)
     return successors
 
 
@@ -388,6 +400,7 @@ def move_like_queen(state, row, col):
             move += 1
         else:
             checking = False
+    return successors
 
 
 def is_frozen(state, row, col):
@@ -420,14 +433,6 @@ def find_kings(state):
     return locs
 
 
-def checkImmobilized(state, row, col, piece):
-    if state[row][col] is 14 or 15:
-        # checking if the piece is immobilized
-        if who(state[row][col]) != who(piece) :
-            return True
-    return False
-
-
 # King
 # does not return captured list
 # returns legal moves and new state resulting from move
@@ -438,7 +443,7 @@ def move_king(currentState, row, col):
     for i in range(-1, 2):
         for j in range(-1, 2):
             if is_valid(row+i, col+j):
-                if checkImmobilized(currentState.board, row + i, col + j, king):
+                if is_frozen(currentState, row, col):
                     return []
                 newState = BC_state(currentState.board)
                 # checking imitator capturing king
@@ -471,8 +476,8 @@ def move_pincer(currentState, row, col):
     for i in range(-7, 8):
         for j in range(-7, 8):
             # pincer only can move vertically and horizontally like a rook in chess
-            if (i != 0 and j == 0 or i == 0 and j!= 0) and is_valid(row+i, col+j):
-                if checkImmobilized(currentState.board, row + i, col + j, pincer):
+            if (i != 0 and j == 0 or i == 0 and j != 0) and is_valid(row+i, col+j):
+                if is_frozen(currentState, row, col):
                     return []
                 newState = BC_state(currentState.board)
 
@@ -511,15 +516,9 @@ def pincer_capture(newState, row, col):
         for j in range (-1, 2):
             # only can capture vertically and horizontally
             if i != 0 and j == 0 or i == 0 and j!= 0:
-                if j == 0:
-                    checkRow = row + 2 * i
-                    checkCol = col + j
-                elif i == 0:
-                    checkRow = row + i
-                    checkCol = col + 2 * j
-                if 0 <= checkRow < 8 and 0 <= checkCol < 8:
+                if 0 <= row + 2*i < 8 and 0 <= col + 2*j < 8:
                     if updatedBoard.board[row+i][col+j] != 0 and \
-                            who(updatedBoard.board[checkRow][checkCol]) == who(updatedBoard.board[row][col]) and \
+                            who(updatedBoard.board[row+2*i][col+2*j]) == who(updatedBoard.board[row][col]) and \
                             who(updatedBoard.board[row+i][col+j]) != who(updatedBoard.board[row][col]):
                         # captured
                         updatedBoard.board[row+i][col+j] = 0
