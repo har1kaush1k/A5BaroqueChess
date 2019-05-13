@@ -472,40 +472,96 @@ def move_king(currentState, row, col):
 def move_pincer(currentState, row, col):
     pincer = currentState.board[row][col]
     possibleStates = []
+    if pincer == 8 or pincer == 9:
+        print("HELLO")
 
-    for i in range(-7, 8):
-        for j in range(-7, 8):
-            # pincer only can move vertically and horizontally like a rook in chess
-            if (i != 0 and j == 0 or i == 0 and j != 0) and is_valid(row+i, col+j):
-                if is_frozen(currentState, row, col):
-                    return []
-                newState = BC_state(currentState.board)
+    if is_frozen(currentState, row, col):
+        return []
 
-                # check imitator capturing pincer
-                if (pincer == 8 or pincer == 9) and currentState.board[row+i][col+j] == 0:
-                    if j == 0:
-                        checkRow = row + i + 1
-                        checkCol = col + j
-                    if i == 0:
-                        checkRow = row + i
-                        checkCol = col + j + 1
-                    if is_valid(checkRow, checkCol):
-                        if currentState.board[checkRow][checkCol] == 3:
-                            newState.board[row + i][col + j] = pincer
-                            newState.board[row][col] = 0
-                            newState = pincer_capture(newState, row+i, col+j)
-                            move = ((row, col), (row+i, col+j))
-                            return [[move, newState]]
-                if currentState.board[row+i][col+j] == 0 and pincer != 8 and pincer != 9:
-                    # update new position with pincer and remove the original
-                    newState.board[row+i][col+j] = pincer
+    for i in range(1, 8):
+        newState = BC_state(currentState.board)
+        # south direction
+        if pincer != 8 and pincer != 9:
+            if is_valid(row+i, col):
+                if currentState.board[row+i][col] == 0:
+                    newState.board[row+i][col] = pincer
                     newState.board[row][col] = 0
-                    # store the move made
-                    move = ((row, col), (row+i, col+j))
-                    # remove the captured pieces on the board with pincer at new location
-                    newState = pincer_capture(newState, row+i, col+j)
-                    # add [move, new state] to possible states for that piece
+                    move = ((row, col), (row+i, col))
+                    newState = pincer_capture(newState, row+i, col)
                     possibleStates = possibleStates + [[move, newState]]
+                else: break
+        else:
+            if is_valid(row+i+1, col):
+                if (currentState.board[row+i+1][col] == 3 or currentState.board[row+i+1][col] == 2) and \
+                        who(currentState.board[row+i+1][col]) != who(currentState.board[row][col]):
+                    newState.board[row+i][col] = pincer
+                    newState.board[row][col] = 0
+                    newState = pincer_capture(newState, row+i, col)
+                    move = ((row, col), (row+i, col))
+                    return [[move, newState]]
+    for i in range(1, 8):
+        newState = BC_state(currentState.board)
+        # north direction
+        if pincer != 8 and pincer != 9:
+            if is_valid(row-i, col):
+                if currentState.board[row-i][col] == 0:
+                    newState.board[row-i][col] = pincer
+                    newState.board[row][col] = 0
+                    move = ((row, col), (row-i, col))
+                    newState = pincer_capture(newState, row-i, col)
+                    possibleStates = possibleStates + [[move, newState]]
+                else: break
+        else:
+            if is_valid(row-i-1, col):
+                if (currentState.board[row-i-1][col] == 3 or currentState.board[row-i-1][col] == 2) and \
+                        who(currentState.board[row-i-1][col]) != who(currentState.board[row][col]):
+                    newState.board[row-i][col] = pincer
+                    newState.board[row][col] = 0
+                    newState = pincer_capture(newState, row-i, col)
+                    move = ((row, col), (row-i, col))
+                    return [[move, newState]]
+    for i in range(1, 8):
+        # east direction
+        newState = BC_state(currentState.board)
+        if pincer != 8 and pincer != 9:
+            if is_valid(row, col+i):
+                if currentState.board[row][col+i] == 0:
+                    newState.board[row][col+i] = pincer
+                    newState.board[row][col] = 0
+                    move = ((row, col), (row, col+i))
+                    newState = pincer_capture(newState, row, col+i)
+                    possibleStates = possibleStates + [[move, newState]]
+                else: break
+        else:
+            if is_valid(row, col+i+1):
+                if (currentState.board[row][col+i+1] == 3 or currentState.board[row][col+i+1] == 2) and \
+                        who(currentState.board[row][col+i+1]) != who(currentState.board[row][col]):
+                    newState.board[row][col+i] = pincer
+                    newState.board[row][col] = 0
+                    newState = pincer_capture(newState, row, col+i)
+                    move = ((row, col), (row, col+i))
+                    return [[move, newState]]
+    for i in range(1, 8):
+        # west direction
+        newState = BC_state(currentState.board)
+        if pincer != 8 and pincer != 9:
+            if is_valid(row, col-i):
+                if currentState.board[row][col-i] == 0:
+                    newState.board[row][col-i] = pincer
+                    newState.board[row][col] = 0
+                    move = ((row, col), (row, col-i))
+                    newState = pincer_capture(newState, row, col-i)
+                    possibleStates = possibleStates + [[move, newState]]
+                else: break
+        else:
+            if is_valid(row, col-i-1):
+                if (currentState.board[row][col-i-1] == 3 or currentState.board[row][col-i-1] == 2) and \
+                        who(currentState.board[row][col-i-1]) != who(currentState.board[row][col]):
+                    newState.board[row][col-i] = pincer
+                    newState.board[row][col] = 0
+                    newState = pincer_capture(newState, row, col-i)
+                    move = ((row, col), (row, col-i))
+                    return [[move, newState]]
     # return all possible states for the board
     return possibleStates
 
