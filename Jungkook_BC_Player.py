@@ -70,11 +70,11 @@ def generate_successors(state):
             piece = state.board[row][col]
             # if who(sq) == currentState.whose_move and sq > 0:
             if who(piece) == state.whose_move and piece > 0 and not is_frozen(state, row, col):
-                if piece == WHITE_PINCER or piece == BLACK_PINCER:
+                if piece == WHITE_PINCER or piece == BLACK_PINCER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                     successors = successors + move_pincer(state, row, col)
-                if piece == WHITE_KING or piece == BLACK_KING:
+                if piece == WHITE_KING or piece == BLACK_KING or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                     successors = successors + move_king(state, row, col)
-                if piece > 3 and piece != 8 and piece != 9 and piece != 12 and piece != 13:
+                if piece > 3 and piece != 12 and piece != 13:
                     successors = successors + move_like_queen(state, row, col)
     return successors
 
