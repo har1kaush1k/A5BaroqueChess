@@ -10,7 +10,7 @@ VERSION = '1.0-BETA'
 import sys
 import BC_checker   # API for accessing web-based move validation.
 TIME_PER_MOVE = 1   # Default time limit is one second.
-TURN_LIMIT = 5      # Good for testing.
+TURN_LIMIT = 2      # Good for testing.
 #TURN_LIMIT = 100 # Terminates runaway games.
 
 # Get names of players and time limit from the command line.
@@ -26,7 +26,7 @@ else:
 
 import BC_state_etc as BC
 
-VALIDATE_MOVES = True # If players are trusted not to cheat, this could be turned off to save time.
+VALIDATE_MOVES = False # If players are trusted not to cheat, this could be turned off to save time.
 
 from winTester import winTester
 

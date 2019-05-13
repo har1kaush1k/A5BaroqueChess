@@ -535,7 +535,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
     newState = BC_state(currentState.board)
 
     # Fix up whose turn it will be.
-    newState.whose_move = 1 - currentState.whose_move
+    #newState.whose_move = 1 - currentState.whose_move
     
     startTime = time.perf_counter()
     #while time.perf_counter()-startTime < timelimit - float(.1):
@@ -549,9 +549,10 @@ def makeMove(currentState, currentRemark, timelimit=10):
     successors = generate_successors(currentState)
     print(successors)
 
-   #move = ((6, 4), (3, 4))
+    #move = ((6, 4), (3, 4))
     move = successors[2][0]
     newState = successors[2][1]
+    newState.whose_move = 1 - currentState.whose_move
     # Make up a new remark
     newRemark = "I'll think harder in some future game. Here's my move"
 
