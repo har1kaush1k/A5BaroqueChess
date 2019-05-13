@@ -26,7 +26,7 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
     if alphaBeta:
         alpha = +100000
         beta = -100000
-        provisional = parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
+        provisional = pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
     else:
         provisional = minimaxHelper(currentState, ply, useBasicStaticEval, useZobristHashing)
 
@@ -41,7 +41,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
     if ply == 0 and useBasicStaticEval:
         N_STATIC_EVALS = N_STATIC_EVALS + 1
         print(basicStaticEval(currentState))
-        return basicStaticEval(currentState)
+        return basicStaticEval(currentState), currentState
     if ply % 2 == MAX_PLY % 2:
         provisional = -100000
     else:
@@ -52,15 +52,15 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
     for s in successors:
         N_STATES_EXPANDED = N_STATES_EXPANDED + 1
         # how to pass in just the state of successors of form [(move, move), newstate]
-        newVal = minimaxHelper(s, ply - 1)
+        newVal, newMove = minimaxHelper(s, ply - 1)
         if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
             provisional = newVal
 
     return provisional
 
 
-def parameterized_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval=True, useZobristHashing=False):
-    pass
+def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval=True, useZobristHashing=False):
+    return 1000
 
 
 def generate_successors(state):
@@ -460,7 +460,7 @@ def move_king(currentState, row, col):
                     newState.board[row+i][col+j] = king
                     newState.board[row][col] = 0
                     move = ((row, col), (row+i, col+j))
-                    possibleStates = possibleStates + [move, newState]
+                    possibleStates = possibleStates + [[move, newState]]
     return possibleStates
 
 
@@ -505,7 +505,7 @@ def move_pincer(currentState, row, col):
                     # remove the captured pieces on the board with pincer at new location
                     newState = pincer_capture(newState, row+i, col+j)
                     # add [move, new state] to possible states for that piece
-                    possibleStates = possibleStates + [move, newState]
+                    possibleStates = possibleStates + [[move, newState]]
     # return all possible states for the board
     return possibleStates
 
@@ -545,12 +545,36 @@ def makeMove(currentState, currentRemark, timelimit=10):
     # Here is a placeholder in the right format but with made-up
     # numbers:
 
-    move = ((6, 4), (3, 4))
+    
+    successors = generate_successors(currentState)
+    print(successors)
 
+   #move = ((6, 4), (3, 4))
+    move = successors[2][0]
+    newState = successors[2][1]
     # Make up a new remark
     newRemark = "I'll think harder in some future game. Here's my move"
 
     return [[move, newState], newRemark]
+
+def translate_move_coord(move):
+    fr = ''
+    to = ''
+    for i in range(2):
+        num = 0
+        letter = 'a'
+        for j in range(2):
+            if j == 0:
+                num = 8 - move[i][j]
+            if j == 1:
+                letter = str(chr(move[i][j] + 97))
+        if i == 0:
+            fr = fr + letter + str(num)
+        if i == 1:
+            to = to + letter + str(num)
+    coord = (fr, to)
+    return coord
+                
 
 
 def nickname():

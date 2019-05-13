@@ -5,7 +5,7 @@ Has support for validation of moves, via a web service.
 '''
 VERSION = '1.0-BETA'
 
-# Usage: python3 BaroqueGameMaster.py PlayerSkeletonA PlayerSkeletonB 1.0
+# Usage: python3 BaroqueGameMaster.py Jungkook_BC_Player Jungkook_BC_Player 1.0
 
 import sys
 import BC_checker   # API for accessing web-based move validation.
