@@ -9,12 +9,14 @@ import time as time
 pieces = []
 OPONENT_NAME = ''
 BASIC_REMARKS = []
-MAX_PLY = 4
+MAX_PLY = 3
 CURRENT_STATE_STATIC_VAL = 0
 N_STATES_EXPANDED = 0
 N_STATIC_EVALS = 0
 N_CUTOFFS = 0
 TIME_LIMIT = 0
+START_TIME = 0
+count = 0
 chosenState = None
 
 piece_vals = {0: 0.0, 2: -13.0, 3: 13.0, 4: -75.0, 5: 75.0, 6: -100.0, 7: 100.0, 8: -13.0, 9: 13.0, 10: -35.0, 11: 35.0,
@@ -42,7 +44,6 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
     '''Implement this testing function for your agent's basic
     capabilities here.'''
     global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, TIME_LIMIT, chosenState
-    MAX_PLY = ply
     CURRENT_STATE_STATIC_VAL = 0
     N_STATES_EXPANDED = 0
     N_STATIC_EVALS = 0
@@ -59,120 +60,217 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
         else:
             provisional = staticEval(chosenState[1])
     else:
-        provisional = minimaxHelper([[(0, 0), (0, 0)],currentState], ply, startTime,
-                                    [[(0, 0), (0, 0)],currentState], useBasicStaticEval, useZobristHashing)
+        chosenState, provisional = minimaxHelper([[(0, 0), (0, 0)], currentState], ply, useBasicStaticEval, useZobristHashing)
+        # print(chosenState)
+        #print(provisional)
 
     return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED,
             "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
 
 
-def minimaxHelper(currentState, ply, startTime, bestState, useBasicStaticEval=True, useZobristHashing=False):
-    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
-    # print(currentState)
-    # print(currentState.whose_move)
-    tempState = bestState
-    while time.perf_counter() - startTime < TIME_LIMIT - float(0.5):
-        if ply == 0:
-            N_STATIC_EVALS = N_STATIC_EVALS + 1
-            if useBasicStaticEval:
-                eval = basicStaticEval(currentState[1])
+# def minimaxHelper(currentState, ply, startTime, bestState, useBasicStaticEval=True, useZobristHashing=False):
+#     global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
+#     # print(currentState)
+#     # print(currentState.whose_move)
+#     tempState = bestState
+#     while time.perf_counter() - startTime < TIME_LIMIT - float(0.5):
+#         if ply == 0:
+#             N_STATIC_EVALS = N_STATIC_EVALS + 1
+#             if useBasicStaticEval:
+#                 ev = basicStaticEval(currentState[1])
+#             else:
+#                 ev = staticEval(currentState[1])
+#             return ev
+#         if ply % 2 == MAX_PLY % 2:
+#             provisional = -100000
+#         else:
+#             provisional = 100000
+
+#         successors = generate_successors(currentState[1])
+#         #print(successors)
+#         # print("ply: " + str(ply) + " turn: " + str(currentState.whose_move))
+#         # print(currentState)
+#         if(useBasicStaticEval):
+#             successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
+        
+
+#         for s in successors:
+#             N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+
+#             if useBasicStaticEval:
+#                 tempEval = basicStaticEval(tempState[1])
+#             else:
+#                 tempEval = staticEval(tempState[1])
+
+#             if ply == MAX_PLY-1 and tempState[1] != INITIAL:
+#                 tempEval = -10000
+
+#             if useBasicStaticEval:
+#                 ev = basicStaticEval(s[1])
+#                 if ply == MAX_PLY - 1 and s[1].whose_move == WHITE and \
+#                         ev > tempEval \
+#                         or s[1].whose_move == BLACK and \
+#                         ev < abs(tempEval):
+#                     tempState = s
+#             else:
+#                 ev = staticEval(s[1])
+#                 if ply == MAX_PLY - 1 and s[1].whose_move == WHITE and \
+#                         ev > tempEval \
+#                         or s[1].whose_move == BLACK and \
+#                         ev < abs(tempEval):
+#                     tempState = s
+
+
+#             newVal = minimaxHelper(s, ply - 1, startTime, tempState)
+
+
+#             if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
+#                 provisional = newVal
+#                 chosenState = tempState
+
+#         return provisional
+#     return -100000
+
+def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=False):
+    global N_STATIC_EVALS, N_STATES_EXPANDED, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, START_TIME
+
+    successors = generate_successors(currentState[1])
+    if(useBasicStaticEval):
+        successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
+    currPly = ply - 1
+    finalState = successors[0]
+    tempEv = 0
+    whose = currentState[1].whose_move
+    while time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
+        if currPly == 0:
+            #print('currPly:' + str(currPly))
+            tempState = None
+            if whose == 1:
+                tempMin = -10000
+                for s in successors:
+                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                    if useBasicStaticEval:
+                        ev = basicStaticEval(s[1])
+                    else:
+                        ev = staticEval(s[1])
+                        #print(ev)
+                    N_STATIC_EVALS = N_STATIC_EVALS + 1
+                    # print("ev: " + str(ev) + " min: " + str(tempMin))
+                    if ev >= tempMin:
+                        tempState = s
+                        tempMin = ev
+                        #print(tempState)
+                    # print(ev)
+                tempEv = tempMin
+                # print("final ev: " + str(tempMin))
             else:
-                eval = staticEval(currentState[1])
-            return eval
-        if ply % 2 == MAX_PLY % 2:
-            provisional = -100000
+                tempMax = 10000
+                for s in successors:
+                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                    if useBasicStaticEval:
+                        ev = basicStaticEval(s[1])
+                    else:
+                        ev = staticEval(s[1])
+                        # print(ev)
+                    #print(ev)
+                    N_STATIC_EVALS = N_STATIC_EVALS + 1
+                    if ev <= tempMax:
+                        tempState = s
+                        tempMax = ev
+                    # print(ev)
+                tempEv = tempMax
+            finalState = tempState
+            return tempState, tempEv
         else:
-            provisional = 100000
-
-        successors = generate_successors(currentState[1])
-        # print("ply: " + str(ply) + " turn: " + str(currentState.whose_move))
-        # print(currentState)
-        if(useBasicStaticEval):
-            successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
-
-        for s in successors:
-            N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-
-            if useBasicStaticEval:
-                tempEval = basicStaticEval(tempState[1])
+            tempState = None
+            if whose == 1:
+                tempMin = -10000
+                for s in successors:
+                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                    t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
+                    # print("STOP")
+                    # print(ev)
+                    # exit(1)
+                    if ev >= tempMin:
+                        tempState = s
+                        tempMin = ev
+                tempEv = tempMin
             else:
-                tempEval = staticEval(tempState[1])
-
-            if ply == MAX_PLY-1 and tempState[1] != INITIAL:
-                tempEval = -10000
-
-            if useBasicStaticEval:
-                if ply == MAX_PLY - 1 and currentState[1].whose_move == WHITE and \
-                        basicStaticEval(currentState[1]) > tempEval \
-                        or currentState[1].whose_move == BLACK and \
-                        basicStaticEval(currentState[1]) < abs(tempEval):
-                    tempState = currentState
-            else:
-                if ply == MAX_PLY - 1 and currentState[1].whose_move == WHITE and \
-                        staticEval(currentState[1]) > tempEval \
-                        or currentState[1].whose_move == BLACK and \
-                        staticEval(currentState[1]) < abs(tempEval):
-                    tempState = currentState
-
-
-            newVal = minimaxHelper(s, ply - 1, startTime, tempState)
-
-
-            if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
-                provisional = newVal
-                chosenState = tempState
-
-        return provisional
-    return -100000
-
-
+                tempMax = 10000
+                for s in successors:
+                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                    t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
+                    # print("STOP")
+                    # print("hello: " + str(ev))
+                    #exit(1)
+                    #print(ev)
+                    if ev <= tempMax:
+                        tempState = s
+                        tempMax = ev
+                tempEv = tempMax
+        
+        # if tempState == None:
+        #     print("ply: " + str(currPly))
+        # if tempState != None:
+        #     return tempState, ev
+            finalState = tempState
+        # if ply == MAX_PLY-1:
+        #     print("ply = " + str(ply))
+    # print(finalState is successors[0])
+    # print("final---")
+    # print(tempEv)
+    return finalState, tempEv
+            
 def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing):
-   global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
+    pass
 
-   if ply == 0:
-      if useBasicStaticEval:
-          N_STATIC_EVALS = N_STATIC_EVALS + 1
-          return basicStaticEval(currentState[1])
-      else:
-          N_STATIC_EVALS = N_STATIC_EVALS + 1
-          return staticEval(currentState[1])
+# def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing):
+#    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
 
-   successors = generate_successors(currentState[1])
+#    if ply == 0:
+#       if useBasicStaticEval:
+#           N_STATIC_EVALS = N_STATIC_EVALS + 1
+#           return basicStaticEval(currentState[1])
+#       else:
+#           N_STATIC_EVALS = N_STATIC_EVALS + 1
+#           return staticEval(currentState[1])
 
-   if len(successors) == 0:
-       if ply == MAX_PLY:
-           chosenState = []
-       return staticEval(currentState[1])
+#    successors = generate_successors(currentState[1])
 
-   if ply == MAX_PLY:
-       chosenState = successors[0]
-       if len(successors) == 1:
-           return None
+#    if len(successors) == 0:
+#        if ply == MAX_PLY:
+#            chosenState = []
+#        return staticEval(currentState[1])
 
-   if currentState[1].whose_move == WHITE:
-       for s in successors:
-           N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-           result = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval, useZobristHashing)
-           if result > alpha:
-               alpha = result
-               if ply == MAX_PLY:
-                   chosenState = successors[0]
-           if alpha >= beta:
-               N_CUTOFFS = N_CUTOFFS + 1
-               return alpha
-       return alpha
+#    if ply == MAX_PLY:
+#        chosenState = successors[0]
+#        if len(successors) == 1:
+#            return None
 
-   if currentState[1].whose_move == BLACK:
-       for s in successors:
-           result = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval, useZobristHashing)
-           if result < alpha:
-               beta = result
-               if ply == MAX_PLY:
-                   chosenState = successors[0]
-           if beta <= alpha:
-               N_CUTOFFS = N_CUTOFFS + 1
-               return beta
-       return beta
+#    if currentState[1].whose_move == WHITE:
+#        for s in successors:
+#            N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+#            result = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval, useZobristHashing)
+#            if result > alpha:
+#                alpha = result
+#                if ply == MAX_PLY:
+#                    chosenState = successors[0]
+#            if alpha >= beta:
+#                N_CUTOFFS = N_CUTOFFS + 1
+#                return alpha
+#        return alpha
+
+#    if currentState[1].whose_move == BLACK:
+#        for s in successors:
+#            result = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval, useZobristHashing)
+#            if result < alpha:
+#                beta = result
+#                if ply == MAX_PLY:
+#                    chosenState = successors[0]
+#            if beta <= alpha:
+#                N_CUTOFFS = N_CUTOFFS + 1
+#                return beta
+#        return beta
 
 
 def generate_successors(state):
@@ -196,6 +294,7 @@ def generate_successors(state):
     #     s[1].whose_move = 1 - s[1].whose_move
     for s in successors:
         new_s = new_s + [[s[0], BC_state(s[1].board, new_turn)]]
+    #print(new_s)
     return new_s
 
 
@@ -771,18 +870,31 @@ def pincer_capture(newState, row, col):
 def makeMove(currentState, currentRemark, timelimit=10):
     # Compute the new state for a move.
     # You should implement an anytime algorithm based on IDDFS.
-    global chosenState
+    global count, chosenState, BASIC_REMARKS
     # The following is a placeholder that just copies the current state.
     newState = BC_state(currentState.board)
 
     # Fix up whose turn it will be.
     # newState.whose_move = 1 - currentState.whose_move
 
-    global TIME_LIMIT
+    global TIME_LIMIT, START_TIME
     TIME_LIMIT = timelimit
-    #while time.perf_counter()-startTime < timelimit - float(.1):
-    s = parameterized_minimax(currentState, alphaBeta=True, useBasicStaticEval=False)
-    #print(s)
+    START_TIME = time.perf_counter()
+    bestMove = None
+   #s = parameterized_minimax(currentState, ply=MAX_PLY, alphaBeta=False, useBasicStaticEval=False)
+    for ply in range(1, MAX_PLY + 2):
+        s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=False)
+        if bestMove == None:
+            bestMove = chosenState
+        else:
+            if currentState.whose_move == WHITE:
+                if staticEval(bestMove[1]) > staticEval(chosenState[1]):
+                    bestMove = chosenState
+            else:
+                if staticEval(bestMove[1]) < staticEval(chosenState[1]):
+                    bestMove = chosenState
+    #     print(ply)
+    #     print(s)
     # Construct a representation of the move that goes from the
     # currentState to the newState.
     # Here is a placeholder in the right format but with made-up
@@ -805,9 +917,9 @@ def makeMove(currentState, currentRemark, timelimit=10):
     #newState = successors[2][1]
     #newState.whose_move = 1 - currentState.whose_move
     # Make up a new remark
-    newRemark = "I'll think harder in some future game. Here's my move"
-
-    return [chosenState, newRemark]
+    newRemark = BASIC_REMARKS[count % 10]
+    count = count + 1
+    return [bestMove, newRemark]
 
 def translate_move_coord(move):
     fr = ''
@@ -843,17 +955,20 @@ def prepare(player2Nickname):
     the opponent agent, in case your agent can use it in some of
     the dialog responses.  Other than that, this function can be
     used for initializing data structures, if needed.'''
+    global BASIC_REMARKS
     OPONENT_NAME = player2Nickname
 
     # Additional remarks added in can move regarding to what moves are being made
-    BASIC_REMARKS = ["I hope this game turns out well for me...," + OPONENT_NAME + ".",
+    BASIC_REMARKS = ["I hope this game turns out well for me..., " + OPONENT_NAME + ".",
                     "This game is getting kind of intense, " + OPONENT_NAME + ".",
                     "I hope you're having fun, " + OPONENT_NAME + ".",
                     "Wow. I'm getting tired already...",
                     "Why don't you practice some more befor challenging me again.",
                     "Can you do any better?",
                     "Sorry, I'm just too good.",
-                    "Can you make this more interesting? I'm getting bored."]
+                    "Can you make this more interesting? I'm getting bored.", 
+                    "I have a concert to play at... Can we speed this up, " + OPONENT_NAME + "??",
+                    "I have a lot of fans waiting for me. I need to finish this quickly."]
 
 
 
@@ -975,5 +1090,5 @@ def staticEval(state):
                     if piece == BLACK_PINCER:
                         score -= (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
 
-    print(score)
+    # print(score)
     return score
