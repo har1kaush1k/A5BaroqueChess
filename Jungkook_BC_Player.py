@@ -9,7 +9,7 @@ import time as time
 pieces = []
 OPONENT_NAME = ''
 BASIC_REMARKS = []
-MAX_PLY = 3
+MAX_PLY = 4
 CURRENT_STATE_STATIC_VAL = 0
 N_STATES_EXPANDED = 0
 N_STATIC_EVALS = 0
@@ -17,6 +17,25 @@ N_CUTOFFS = 0
 TIME_LIMIT = 0
 chosenState = None
 
+piece_vals = {0: 0.0, 2: -13.0, 3: 13.0, 4: -75.0, 5: 75.0, 6: -100.0, 7: 100.0, 8: -13.0, 9: 13.0, 10: -35.0, 11: 35.0,
+              12: -1000.0, 13: 1000.0, 14: -100.0, 15: 100.0}
+edge_vals = [[9, 8, 8, 8, 8, 8, 8, 9],
+             [8, 5, 5, 5, 5, 5, 5, 8],
+             [8, 5, 4, 4, 4, 4, 5, 8],
+             [8, 5, 4, 3, 3, 4, 5, 8],
+             [8, 5, 4, 3, 3, 4, 5, 8],
+             [8, 5, 4, 4, 4, 4, 5, 8],
+             [8, 5, 5, 5, 5, 5, 5, 8],
+             [9, 8, 8, 8, 8, 8, 8, 9]]
+
+middle_vals = [[2, 2, 2, 2, 2, 2, 2, 2],
+             [3, 3, 3, 3, 3, 3, 3, 3],
+             [4, 4, 4, 4, 4, 4, 4, 4],
+             [5, 5, 5, 5, 5, 5, 5, 5],
+             [5, 5, 5, 5, 5, 5, 5, 5],
+             [4, 4, 4, 4, 4, 4, 4, 4],
+             [3, 3, 3, 3, 3, 3, 3, 3],
+             [2, 2, 2, 2, 2, 2, 2, 2]]
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
@@ -68,8 +87,8 @@ def minimaxHelper(currentState, ply, startTime, bestState, useBasicStaticEval=Tr
         successors = generate_successors(currentState[1])
         # print("ply: " + str(ply) + " turn: " + str(currentState.whose_move))
         # print(currentState)
-
-        successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
+        if(useBasicStaticEval):
+            successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
 
         for s in successors:
             N_STATES_EXPANDED = N_STATES_EXPANDED + 1
@@ -156,7 +175,6 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
        return beta
 
 
-
 def generate_successors(state):
     successors = []
     new_s = []
@@ -182,7 +200,7 @@ def generate_successors(state):
 
 
 def is_valid(row, col):
-    if 0 <= row < 8 and 0 <= clol < 8:
+    if 0 <= row < 8 and 0 <= col < 8:
         return True
     return False
 
@@ -763,8 +781,8 @@ def makeMove(currentState, currentRemark, timelimit=10):
     global TIME_LIMIT
     TIME_LIMIT = timelimit
     #while time.perf_counter()-startTime < timelimit - float(.1):
-    s = parameterized_minimax(currentState, alphaBeta=True)
-    print(s)
+    s = parameterized_minimax(currentState, alphaBeta=True, useBasicStaticEval=False)
+    #print(s)
     # Construct a representation of the move that goes from the
     # currentState to the newState.
     # Here is a placeholder in the right format but with made-up
@@ -883,11 +901,79 @@ def pieceVal(piece):
     else:
         return 0
 
+# def staticEval(state):
+
+#     '''Compute a more thorough static evaluation of the given state.
+#     This is intended for normal competitive play.  How you design this
+#     function could have a significant impact on your player's ability
+#     to win games.'''
+#     b = state.board
+#     score = 0
+#     for row in range(8):
+#         for col in range(8):
+#     return score
+
 def staticEval(state):
     b = state.board
-    score = 0
+    score = 0.0
+    king_locs = find_kings(state)
+    whose = state.whose_move
+    for row in range(8):
+        for col in range(8):
+            piece = b[row][col]
+            score += piece_vals.get(piece) # - (0.25 * middle_vals[row][col] * -1 ** whose)
+            if piece == BLACK_KING:
+                score -= (2 * edge_vals[row][col])
+            elif piece == WHITE_KING:
+                score += (2 * edge_vals[row][col])
+            
+            if (who(piece) == whose and row != king_locs[0] and col != king_locs[1]) or \
+                    (who(piece) != whose and row != king_locs[2] and col != king_locs[3]):
+                if piece == BLACK_COORDINATOR:
+                    score -= 5
+                elif piece == WHITE_COORDINATOR:
+                    score += 5
 
-    '''Compute a more thorough static evaluation of the given state.
-    This is intended for normal competitive play.  How you design this
-    function could have a significant impact on your player's ability
-    to win games.'''
+            if is_frozen(state, row, col):
+                score -= 0.1 * piece_vals.get(piece) * middle_vals[row][col]
+
+            if piece == BLACK_WITHDRAWER or piece == WHITE_WITHDRAWER:
+                reduction = 0
+                for i in range(-1,2):
+                    for j in range(-1,2):
+                        temp_row = row + i
+                        temp_col = col + j
+                        temp_row2 = row - i
+                        temp_col2 = col - j
+
+                        # adj = b[temp_row][temp_col]
+                        # opp = b[temp_row2][temp_col2]
+                        if is_valid(temp_row, temp_col) and i != 0 and j != 0 and is_valid(temp_row2, temp_col2):
+                            if b[temp_row][temp_col] != 0 and who(b[temp_row][temp_col]) != piece and b[temp_row2][temp_col2] == 0:
+                                if abs(piece_vals.get(b[temp_row][temp_col])) > abs(reduction):
+                                    reduction = piece_vals.get(b[temp_row][temp_col])
+                score += reduction / 10
+            
+            if piece == BLACK_PINCER or piece == WHITE_PINCER: # pincher
+                for i in range(-2, 3, 4):
+                    if 0 <= row + i < 8:
+                        row_temp = b[row + i][col]
+                        if row_temp is piece:
+                            score += piece_vals.get(row_temp) / 4
+                    if 0 <= col + i < 8:
+                        col_temp = b[row][col + i]
+                        if col_temp is piece:
+                            score += piece_vals.get(col_temp) / 4
+                if who(piece) == whose:
+                    if piece == BLACK_PINCER:
+                        score -= (8 - (abs(row - king_locs[0]) + abs(col - king_locs[1])))
+                    if piece == WHITE_PINCER: 
+                        score += (8 - (abs(row - king_locs[0]) + abs(col - king_locs[1])))
+                elif who(piece) != whose:
+                    if piece == WHITE_PINCER: 
+                        score += (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
+                    if piece == BLACK_PINCER:
+                        score -= (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
+
+    print(score)
+    return score
