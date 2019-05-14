@@ -155,7 +155,7 @@ def generate_successors(state):
 
 
 def is_valid(row, col):
-    if 0 <= row < 8 and 0 <= col < 8:
+    if 0 <= row < 8 and 0 <= clol < 8:
         return True
     return False
 
@@ -857,7 +857,8 @@ def pieceVal(piece):
         return 0
 
 def staticEval(state):
-    currentState = state.board
+    b = state.board
+    score = 0
 
     '''Compute a more thorough static evaluation of the given state.
     This is intended for normal competitive play.  How you design this
