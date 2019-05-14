@@ -24,12 +24,21 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
     capabilities here.'''
     global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, TIME_LIMIT, chosenState
     MAX_PLY = ply
+    CURRENT_STATE_STATIC_VAL = 0
+    N_STATES_EXPANDED = 0
+    N_STATIC_EVALS = 0
+    N_CUTOFFS = 0
+
     startTime = time.perf_counter()
     # using alpha beta pruning
     if alphaBeta:
         alpha = +100000
         beta = -100000
-        provisional = pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
+        pruned_minimaxHelper([[(0, 0), (0, 0)],currentState], alpha, beta, ply, useBasicStaticEval, useZobristHashing)
+        if useBasicStaticEval:
+            provisional = basicStaticEval(chosenState[1])
+        else:
+            provisional = staticEval(chosenState[1])
     else:
         provisional = minimaxHelper([[(0, 0), (0, 0)],currentState], ply, startTime,
                                     [[(0, 0), (0, 0)],currentState], useBasicStaticEval, useZobristHashing)
@@ -43,11 +52,14 @@ def minimaxHelper(currentState, ply, startTime, bestState, useBasicStaticEval=Tr
     # print(currentState)
     # print(currentState.whose_move)
     tempState = bestState
-    while time.perf_counter() - startTime < TIME_LIMIT - float(0.1):
-        if ply == 0 and useBasicStaticEval:
+    while time.perf_counter() - startTime < TIME_LIMIT - float(0.5):
+        if ply == 0:
             N_STATIC_EVALS = N_STATIC_EVALS + 1
-            staticEval = basicStaticEval(currentState[1])
-            return staticEval
+            if useBasicStaticEval:
+                eval = basicStaticEval(currentState[1])
+            else:
+                eval = staticEval(currentState[1])
+            return eval
         if ply % 2 == MAX_PLY % 2:
             provisional = -100000
         else:
@@ -62,15 +74,28 @@ def minimaxHelper(currentState, ply, startTime, bestState, useBasicStaticEval=Tr
         for s in successors:
             N_STATES_EXPANDED = N_STATES_EXPANDED + 1
 
-            tempEval = basicStaticEval(tempState[1])
+            if useBasicStaticEval:
+                tempEval = basicStaticEval(tempState[1])
+            else:
+                tempEval = staticEval(tempState[1])
+
             if ply == MAX_PLY-1 and tempState[1] != INITIAL:
                 tempEval = -10000
 
-            if ply == MAX_PLY - 1 and currentState[1].whose_move == WHITE and \
-                    basicStaticEval(currentState[1]) > tempEval \
-                    or currentState[1].whose_move == BLACK and \
-                    basicStaticEval(currentState[1]) < abs(tempEval):
-                tempState = currentState
+            if useBasicStaticEval:
+                if ply == MAX_PLY - 1 and currentState[1].whose_move == WHITE and \
+                        basicStaticEval(currentState[1]) > tempEval \
+                        or currentState[1].whose_move == BLACK and \
+                        basicStaticEval(currentState[1]) < abs(tempEval):
+                    tempState = currentState
+            else:
+                if ply == MAX_PLY - 1 and currentState[1].whose_move == WHITE and \
+                        staticEval(currentState[1]) > tempEval \
+                        or currentState[1].whose_move == BLACK and \
+                        staticEval(currentState[1]) < abs(tempEval):
+                    tempState = currentState
+
+
             newVal = minimaxHelper(s, ply - 1, startTime, tempState)
 
 
@@ -82,52 +107,54 @@ def minimaxHelper(currentState, ply, startTime, bestState, useBasicStaticEval=Tr
     return -100000
 
 
+def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing):
+   global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
 
-# alpaBetaMinimax(state, alpha, beta)
+   if ply == 0:
+      if useBasicStaticEval:
+          N_STATIC_EVALS = N_STATIC_EVALS + 1
+          return basicStaticEval(currentState[1])
+      else:
+          N_STATIC_EVALS = N_STATIC_EVALS + 1
+          return staticEval(currentState[1])
 
-#    # check if at search bound
-#    if node is at depthLimit
-#       return staticEval(node)
+   successors = generate_successors(currentState[1])
 
-#    # check if leaf
-#    children = successors(node)
-#    if len(children) == 0
-#       if node is root
-#          bestMove = []
-#       return staticEval(node)
+   if len(successors) == 0:
+       if ply == MAX_PLY:
+           chosenState = []
+       return staticEval(currentState[1])
 
-#    # initialize bestMove
-#    if node is root
-#       bestMove = operator of first child
-#       # check if there is only one option
-#       if len(children) == 1
-#          return None
+   if ply == MAX_PLY:
+       chosenState = successors[0]
+       if len(successors) == 1:
+           return None
 
-#    if it is MAX's turn to move
-#       for child in children
-#          result = alphaBetaMinimax(child, alpha, beta)
-#          if result > alpha
-#             alpha = result
-#             if node is root
-#                bestMove = operator of child
-#          if alpha >= beta
-#             return alpha
-#       return alpha
+   if currentState[1].whose_move == WHITE:
+       for s in successors:
+           N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+           result = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval, useZobristHashing)
+           if result > alpha:
+               alpha = result
+               if ply == MAX_PLY:
+                   chosenState = successors[0]
+           if alpha >= beta:
+               N_CUTOFFS = N_CUTOFFS + 1
+               return alpha
+       return alpha
 
-#    if it is MIN's turn to move
-#       for child in children
-#          result = alphaBetaMinimax(child, alpha, beta)
-#          if result < beta
-#             beta = result
-#             if node is root
-#                bestMove = operator of child
-#          if beta <= alpha
-#             return beta
-#       return beta
+   if currentState[1].whose_move == BLACK:
+       for s in successors:
+           result = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval, useZobristHashing)
+           if result < alpha:
+               beta = result
+               if ply == MAX_PLY:
+                   chosenState = successors[0]
+           if beta <= alpha:
+               N_CUTOFFS = N_CUTOFFS + 1
+               return beta
+       return beta
 
-
-def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval=True, useZobristHashing=False):
-    return 1000
 
 
 def generate_successors(state):
@@ -726,7 +753,7 @@ def pincer_capture(newState, row, col):
 def makeMove(currentState, currentRemark, timelimit=10):
     # Compute the new state for a move.
     # You should implement an anytime algorithm based on IDDFS.
-
+    global chosenState
     # The following is a placeholder that just copies the current state.
     newState = BC_state(currentState.board)
 
@@ -736,7 +763,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
     global TIME_LIMIT
     TIME_LIMIT = timelimit
     #while time.perf_counter()-startTime < timelimit - float(.1):
-    s = parameterized_minimax(currentState)
+    s = parameterized_minimax(currentState, alphaBeta=True)
     print(s)
     # Construct a representation of the move that goes from the
     # currentState to the newState.
@@ -864,4 +891,3 @@ def staticEval(state):
     This is intended for normal competitive play.  How you design this
     function could have a significant impact on your player's ability
     to win games.'''
-    pass
