@@ -14,56 +14,76 @@ CURRENT_STATE_STATIC_VAL = 0
 N_STATES_EXPANDED = 0
 N_STATIC_EVALS = 0
 N_CUTOFFS = 0
+TIME_LIMIT = 0
+chosenState = None
 
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
-    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY
+    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, TIME_LIMIT, chosenState
     MAX_PLY = ply
-
+    startTime = time.perf_counter()
     # using alpha beta pruning
     if alphaBeta:
         alpha = +100000
         beta = -100000
         provisional = pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
     else:
-        provisional = minimaxHelper(currentState, ply, useBasicStaticEval, useZobristHashing)
-    print(provisional)
+        provisional = minimaxHelper([[(0, 0), (0, 0)],currentState], ply, startTime,
+                                    [[(0, 0), (0, 0)],currentState], useBasicStaticEval, useZobristHashing)
+
     return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED,
             "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
 
 
-
-def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=False):
-    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY
+def minimaxHelper(currentState, ply, startTime, bestState, useBasicStaticEval=True, useZobristHashing=False):
+    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
     # print(currentState)
     # print(currentState.whose_move)
-    if ply == 0 and useBasicStaticEval:
-        N_STATIC_EVALS = N_STATIC_EVALS + 1
-        staticEval = basicStaticEval(currentState)
-        return staticEval
-    if ply % 2 == MAX_PLY % 2:
-        provisional = -100000
-    else:
-        provisional = 100000
+    tempState = bestState
+    while time.perf_counter() - startTime < TIME_LIMIT - float(0.1):
+        if ply == 0 and useBasicStaticEval:
+            N_STATIC_EVALS = N_STATIC_EVALS + 1
+            staticEval = basicStaticEval(currentState[1])
+            return staticEval
+        if ply % 2 == MAX_PLY % 2:
+            provisional = -100000
+        else:
+            provisional = 100000
 
-    successors = generate_successors(currentState)
-    
-    # Problem in sorting: bc state is not subscriptable
-    #successors = sorted(successors, key=lambda k: [k[0], k[1]])
-    successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
-    for s in successors:
-        N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-        # how to pass in just the state of successors of form [(move, move), newstate]
-        newVal = minimaxHelper(s[1], ply - 1)
-        #print(newVal)
-        if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
-            provisional = newVal
-    return provisional
+        successors = generate_successors(currentState[1])
+        # print("ply: " + str(ply) + " turn: " + str(currentState.whose_move))
+        # print(currentState)
 
-# alpaBetaMinimax(state, alpha, beta) 
+        successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
+
+        for s in successors:
+            N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+
+            tempEval = basicStaticEval(tempState[1])
+            if ply == MAX_PLY-1 and tempState[1] != INITIAL:
+                tempEval = -10000
+
+            if ply == MAX_PLY - 1 and currentState[1].whose_move == WHITE and \
+                    basicStaticEval(currentState[1]) > tempEval \
+                    or currentState[1].whose_move == BLACK and \
+                    basicStaticEval(currentState[1]) < abs(tempEval):
+                tempState = currentState
+            newVal = minimaxHelper(s, ply - 1, startTime, tempState)
+
+
+            if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
+                provisional = newVal
+                chosenState = tempState
+
+        return provisional
+    return -100000
+
+
+
+# alpaBetaMinimax(state, alpha, beta)
 
 #    # check if at search bound
 #    if node is at depthLimit
@@ -73,7 +93,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
 #    children = successors(node)
 #    if len(children) == 0
 #       if node is root
-#          bestMove = [] 
+#          bestMove = []
 #       return staticEval(node)
 
 #    # initialize bestMove
@@ -188,7 +208,7 @@ def move_like_queen(state, row, col):
         else:
             checking = False
         move += 1
-    
+
     checking = True
     move = 1
     # Moves in SW direction
@@ -224,11 +244,11 @@ def move_like_queen(state, row, col):
             temp = BC_state(newState.board, newState.whose_move)
             #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
-            
+
         else:
             checking = False
         move += 1
-    
+
     checking = True
     move = 1
     # Moves in W direction
@@ -263,11 +283,11 @@ def move_like_queen(state, row, col):
             temp = BC_state(newState.board, newState.whose_move)
             #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
-            
+
         else:
             checking = False
         move += 1
-    
+
     checking = True
     move = 1
     # Moves in NW direction
@@ -303,11 +323,11 @@ def move_like_queen(state, row, col):
             temp = BC_state(newState.board, newState.whose_move)
             #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
-            
+
         else:
             checking = False
         move += 1
-    
+
     checking = True
     move = 1
     # Moves in N direction
@@ -342,11 +362,11 @@ def move_like_queen(state, row, col):
             temp = BC_state(newState.board, newState.whose_move)
             temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
-            
+
         else:
             checking = False
         move += 1
-    
+
     checking = True
     move = 1
     # Moves in NE direction
@@ -382,11 +402,11 @@ def move_like_queen(state, row, col):
             temp = BC_state(newState.board, newState.whose_move)
             #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
-            
+
         else:
             checking = False
         move += 1
-    
+
     checking = True
     move = 1
     # Moves in E direction
@@ -424,7 +444,7 @@ def move_like_queen(state, row, col):
             move += 1
         else:
             checking = False
-    
+
     checking = True
     move = 1
     # Moves in SE direction
@@ -517,7 +537,7 @@ def move_king(currentState, row, col):
                     newState.board[row][col] = 0
                     temp = BC_state(newState.board, newState.whose_move)
                     #temp.whose_move = 1 - temp.whose_move
-                    return [[move, temp]]                      
+                    return [[move, temp]]
                 # move king if empty spot next to it or the opposing teams occupying it
                 if (king == 12 or king == 13) and (currentState.board[row+i][col+j] == 0 or \
                         who(king) != who(currentState.board[row+i][col+j])):
@@ -699,7 +719,7 @@ def pincer_capture(newState, row, col):
                         # captured
                         updatedBoard.board[row+i][col+j] = 0
     # return same board if no captures
-    # or new board with all the captured pieces removed 
+    # or new board with all the captured pieces removed
     return updatedBoard
 
 
@@ -712,10 +732,10 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
     # Fix up whose turn it will be.
     # newState.whose_move = 1 - currentState.whose_move
-    
-    startTime = time.perf_counter()
+
+    global TIME_LIMIT
+    TIME_LIMIT = timelimit
     #while time.perf_counter()-startTime < timelimit - float(.1):
-    
     s = parameterized_minimax(currentState)
     print(s)
     # Construct a representation of the move that goes from the
@@ -723,7 +743,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
     # Here is a placeholder in the right format but with made-up
     # numbers:
 
-    
+
     # successors = generate_successors(currentState, 1)
     # s2 = generate_successors(successors[1][1], 2)
     # s3 = generate_successors(s2[1][1], 3)
@@ -735,13 +755,14 @@ def makeMove(currentState, currentRemark, timelimit=10):
     # print(s4[1][1])
 
     move = ((6, 4), (3, 4))
+
     #move = successors[2][0]
     #newState = successors[2][1]
     #newState.whose_move = 1 - currentState.whose_move
     # Make up a new remark
     newRemark = "I'll think harder in some future game. Here's my move"
 
-    return [[move, newState], newRemark]
+    return [chosenState, newRemark]
 
 def translate_move_coord(move):
     fr = ''
@@ -760,7 +781,7 @@ def translate_move_coord(move):
             to = to + letter + str(num)
     coord = fr+to
     return coord
-                
+
 
 
 def nickname():
@@ -781,11 +802,11 @@ def prepare(player2Nickname):
 
     # Additional remarks added in can move regarding to what moves are being made
     BASIC_REMARKS = ["I hope this game turns out well for me...," + OPONENT_NAME + ".",
-                    "This game is getting kind of intense, " + OPONENT_NAME + ".", 
+                    "This game is getting kind of intense, " + OPONENT_NAME + ".",
                     "I hope you're having fun, " + OPONENT_NAME + ".",
                     "Wow. I'm getting tired already...",
                     "Why don't you practice some more befor challenging me again.",
-                    "Can you do any better?", 
+                    "Can you do any better?",
                     "Sorry, I'm just too good.",
                     "Can you make this more interesting? I'm getting bored."]
 
@@ -812,7 +833,7 @@ def basicStaticEval(state):
             total = total + pieceVal(col)
     return total
 
-    
+
 
 def pieceVal(piece):
 	# black pieces
@@ -837,7 +858,7 @@ def pieceVal(piece):
 
 def staticEval(state):
     currentState = state.board
-    
+
     '''Compute a more thorough static evaluation of the given state.
     This is intended for normal competitive play.  How you design this
     function could have a significant impact on your player's ability
