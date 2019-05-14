@@ -20,7 +20,8 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
-    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL
+    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY
+    MAX_PLY = ply
 
     # using alpha beta pruning
     if alphaBeta:
@@ -29,34 +30,80 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
         provisional = pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing)
     else:
         provisional = minimaxHelper(currentState, ply, useBasicStaticEval, useZobristHashing)
-
+    print(provisional)
     return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED,
             "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
 
 
 
 def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=False):
-    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL
-
+    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY
+    # print(currentState)
+    # print(currentState.whose_move)
     if ply == 0 and useBasicStaticEval:
         N_STATIC_EVALS = N_STATIC_EVALS + 1
-        print(basicStaticEval(currentState))
-        return basicStaticEval(currentState), currentState
+        staticEval = basicStaticEval(currentState)
+        return staticEval
     if ply % 2 == MAX_PLY % 2:
         provisional = -100000
     else:
         provisional = 100000
+
     successors = generate_successors(currentState)
+    
     # Problem in sorting: bc state is not subscriptable
-    # successors = sorted(successors, key=lambda k: [k[0], k[1]])
+    #successors = sorted(successors, key=lambda k: [k[0], k[1]])
+    successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
     for s in successors:
         N_STATES_EXPANDED = N_STATES_EXPANDED + 1
         # how to pass in just the state of successors of form [(move, move), newstate]
-        newVal, newMove = minimaxHelper(s, ply - 1)
+        newVal = minimaxHelper(s[1], ply - 1)
+        #print(newVal)
         if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
             provisional = newVal
-
     return provisional
+
+# alpaBetaMinimax(state, alpha, beta) 
+
+#    # check if at search bound
+#    if node is at depthLimit
+#       return staticEval(node)
+
+#    # check if leaf
+#    children = successors(node)
+#    if len(children) == 0
+#       if node is root
+#          bestMove = [] 
+#       return staticEval(node)
+
+#    # initialize bestMove
+#    if node is root
+#       bestMove = operator of first child
+#       # check if there is only one option
+#       if len(children) == 1
+#          return None
+
+#    if it is MAX's turn to move
+#       for child in children
+#          result = alphaBetaMinimax(child, alpha, beta)
+#          if result > alpha
+#             alpha = result
+#             if node is root
+#                bestMove = operator of child
+#          if alpha >= beta
+#             return alpha
+#       return alpha
+
+#    if it is MIN's turn to move
+#       for child in children
+#          result = alphaBetaMinimax(child, alpha, beta)
+#          if result < beta
+#             beta = result
+#             if node is root
+#                bestMove = operator of child
+#          if beta <= alpha
+#             return beta
+#       return beta
 
 
 def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval=True, useZobristHashing=False):
@@ -65,6 +112,10 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval=True
 
 def generate_successors(state):
     successors = []
+    new_s = []
+    new_turn = 1-state.whose_move
+    # print('successors whose move:' + str(state.whose_move))
+    # print('whose_move: ' + str(state.whose_move))
     for row in range(8):
         for col in range(8):
             piece = state.board[row][col]
@@ -76,7 +127,11 @@ def generate_successors(state):
                     successors = successors + move_king(state, row, col)
                 if piece > 3 and piece != 12 and piece != 13:
                     successors = successors + move_like_queen(state, row, col)
-    return successors
+    # for s in successors:
+    #     s[1].whose_move = 1 - s[1].whose_move
+    for s in successors:
+        new_s = new_s + [[s[0], BC_state(s[1].board, new_turn)]]
+    return new_s
 
 
 def is_valid(row, col):
@@ -94,12 +149,12 @@ def move_like_queen(state, row, col):
     whose = who(piece)
     successors = []
     captures = []
-
+    # print("move like queen: " + str(whose))
     checking = True
     move = 1
 
     # Moves in S direction
-    while checking:
+    while checking and whose == state.whose_move:
         newState = BC_state(state.board)
         if is_valid(row + move, col) and newState.board[row + move][col] == 0:
             if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
@@ -112,12 +167,12 @@ def move_like_queen(state, row, col):
             elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
                 newState.board[row + move][col] = piece
                 newState.board[row][col] = 0
-                if row - 1 > -1 and newState.board[row - 1][col] != 0 and who(newState.board[row - 1][col]) != whose:
+                if is_valid(row-1, col) and newState.board[row - 1][col] != 0 and who(newState.board[row - 1][col]) != whose:
                     newState.board[row - 1][col] = 0
             elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
                 new_row = row + move
                 new_col = col
-                if newState.board[new_row + 1][new_col] != 0 and who(newState.board[new_row + 1][new_col]) != whose:
+                if is_valid(new_row + 1, new_col) and newState.board[new_row + 1][new_col] != 0 and who(newState.board[new_row + 1][new_col]) != whose:
                     if is_valid(new_row + 2, new_col) and newState.board[new_row + 2][new_col] == 0:
                         newState.board[new_row + 1][new_col] = 0
                         new_row += 2
@@ -127,7 +182,8 @@ def move_like_queen(state, row, col):
                 newState.board[row + move][col] = piece
                 newState.board[row][col] = 0
             new_move = ((row, col), (row + move, col))
-            temp = BC_state(newState.board)
+            temp = BC_state(newState.board, newState.whose_move)
+            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
         else:
             checking = False
@@ -149,12 +205,12 @@ def move_like_queen(state, row, col):
             elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
                 newState.board[row + move][col - move] = piece
                 newState.board[row][col] = 0
-                if newState.board[row - 1][col + 1] != 0 and who(newState.board[row - 1][col + 1]) != whose:
+                if is_valid(row - 1, col + 1) and newState.board[row - 1][col + 1] != 0 and who(newState.board[row - 1][col + 1]) != whose:
                     newState.board[row - 1][col + 1] = 0
             elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
                 new_row = row + move
                 new_col = col - move
-                if newState.board[new_row + 1][new_col - 1] != 0 and who(newState.board[new_row + 1][new_col - 1]) != whose:
+                if is_valid(new_row + 1, new_col - 1) and newState.board[new_row + 1][new_col - 1] != 0 and who(newState.board[new_row + 1][new_col - 1]) != whose:
                     if is_valid(new_row + 2, new_col - 2) and newState.board[new_row + 2][new_col - 2] == 0:
                         newState.board[new_row + 1][new_col - 1] = 0
                         new_row += 2
@@ -165,7 +221,8 @@ def move_like_queen(state, row, col):
                 newState.board[row + move][col - move] = piece
                 newState.board[row][col] = 0
             new_move = ((row, col), (row + move, col - move))
-            temp = BC_state(newState.board)
+            temp = BC_state(newState.board, newState.whose_move)
+            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             
         else:
@@ -188,12 +245,12 @@ def move_like_queen(state, row, col):
             elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
                 newState.board[row][col - move] = piece
                 newState.board[row][col] = 0
-                if newState.board[row][col + 1] != 0 and who(newState.board[row][col + 1]) != whose:
+                if is_valid(row, col + 1) and newState.board[row][col + 1] != 0 and who(newState.board[row][col + 1]) != whose:
                     newState.board[row][col + 1] = 0
             elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
                 new_row = row
                 new_col = col - move
-                if newState.board[new_row][new_col - 1] != 0 and who(newState.board[new_row][new_col - 1]) != whose:
+                if is_valid(new_row, new_col - 1) and newState.board[new_row][new_col - 1] != 0 and who(newState.board[new_row][new_col - 1]) != whose:
                     if is_valid(new_row, new_col - 2) and newState.board[new_row][new_col - 2] == 0:
                         newState.board[new_row][new_col - 1] = 0
                         new_col -= 2
@@ -203,7 +260,8 @@ def move_like_queen(state, row, col):
                 newState.board[row][col - move] = piece
                 newState.board[row][col] = 0
             new_move = ((row, col), (row, col - move))
-            temp = BC_state(newState.board)
+            temp = BC_state(newState.board, newState.whose_move)
+            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             
         else:
@@ -226,12 +284,12 @@ def move_like_queen(state, row, col):
             elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
                 newState.board[row - move][col - move] = piece
                 newState.board[row][col] = 0
-                if newState.board[row + 1][col + 1] != 0 and who(newState.board[row + 1][col + 1]) != whose:
+                if is_valid(row + 1, col + 1) and newState.board[row + 1][col + 1] != 0 and who(newState.board[row + 1][col + 1]) != whose:
                     newState.board[row + 1][col + 1] = 0
             elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
                 new_row = row - move
                 new_col = col - move
-                if newState.board[new_row - 1][new_col - 1] != 0 and who(newState.board[new_row - 1][new_col - 1]) != whose:
+                if is_valid(new_row - 1, new_col - 1) and newState.board[new_row - 1][new_col - 1] != 0 and who(newState.board[new_row - 1][new_col - 1]) != whose:
                     if is_valid(new_row - 2, new_col - 2) and newState.board[new_row - 2][new_col - 2] == 0:
                         newState.board[new_row - 1][new_col - 1] = 0
                         new_col -= 2
@@ -242,7 +300,8 @@ def move_like_queen(state, row, col):
                 newState.board[row - move][col - move] = piece
                 newState.board[row][col] = 0
             new_move = ((row, col), (row - move, col - move))
-            temp = BC_state(newState.board)
+            temp = BC_state(newState.board, newState.whose_move)
+            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             
         else:
@@ -265,12 +324,12 @@ def move_like_queen(state, row, col):
             elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
                 newState.board[row - move][col] = piece
                 newState.board[row][col] = 0
-                if newState.board[row + 1][col] != 0 and who(newState.board[row + 1][col]) != whose:
+                if is_valid(row + 1, col) and newState.board[row + 1][col] != 0 and who(newState.board[row + 1][col]) != whose:
                     newState.board[row + 1][col] = 0
             elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
                 new_row = row - move
                 new_col = col
-                if newState.board[new_row - 1][new_col] != 0 and who(newState.board[new_row - 1][new_col]) != whose:
+                if is_valid(new_row - 1, new_col) and newState.board[new_row - 1][new_col] != 0 and who(newState.board[new_row - 1][new_col]) != whose:
                     if is_valid(new_row - 2, new_col) and newState.board[new_row - 2][new_col] == 0:
                         newState.board[new_row - 1][new_col] = 0
                         new_row -= 2
@@ -280,7 +339,8 @@ def move_like_queen(state, row, col):
                 newState.board[row - move][col] = piece
                 newState.board[row][col] = 0
             new_move = ((row, col), (row - move, col))
-            temp = BC_state(newState.board)
+            temp = BC_state(newState.board, newState.whose_move)
+            temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             
         else:
@@ -303,12 +363,12 @@ def move_like_queen(state, row, col):
             elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
                 newState.board[row - move][col + move] = piece
                 newState.board[row][col] = 0
-                if newState.board[row + 1][col - 1] != 0 and who(newState.board[row + 1][col - 1]) != whose:
+                if is_valid(row + 1, col - 1) and newState.board[row + 1][col - 1] != 0 and who(newState.board[row + 1][col - 1]) != whose:
                     newState.board[row + 1][col - 1] = 0
             elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
                 new_row = row - move
                 new_col = col + move
-                if newState.board[new_row - 1][new_col + 1] != 0 and who(newState.board[new_row - 1][new_col + 1]) != whose:
+                if is_valid(new_row - 1, new_col + 1) and newState.board[new_row - 1][new_col + 1] != 0 and who(newState.board[new_row - 1][new_col + 1]) != whose:
                     if is_valid(new_row - 2, new_col + 2) and newState.board[new_row - 2][new_col + 2] == 0:
                         newState.board[new_row - 1][new_col + 1] = 0
                         new_row -= 2
@@ -319,7 +379,8 @@ def move_like_queen(state, row, col):
                 newState.board[row - move][col + move] = piece
                 newState.board[row][col] = 0
             new_move = ((row, col), (row - move, col + move))
-            temp = BC_state(newState.board)
+            temp = BC_state(newState.board, newState.whose_move)
+            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             
         else:
@@ -342,12 +403,12 @@ def move_like_queen(state, row, col):
             elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
                 newState.board[row][col + move] = piece
                 newState.board[row][col] = 0
-                if newState.board[row][col - 1] != 0 and who(newState.board[row][col - 1]) != whose:
+                if is_valid(row, col - 1) and newState.board[row][col - 1] != 0 and who(newState.board[row][col - 1]) != whose:
                     newState.board[row][col - 1] = 0
             elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
                 new_row = row
                 new_col = col + move
-                if newState.board[new_row][new_col + 1] != 0 and who(newState.board[new_row][new_col + 1]) != whose:
+                if is_valid(new_row, new_col + 1) and newState.board[new_row][new_col + 1] != 0 and who(newState.board[new_row][new_col + 1]) != whose:
                     if is_valid(new_row, new_col + 2) and newState.board[new_row][new_col + 2] == 0:
                         newState.board[new_row][new_col + 1] = 0
                         new_col += 2
@@ -357,7 +418,8 @@ def move_like_queen(state, row, col):
                 newState.board[row][col + move] = piece
                 newState.board[row][col] = 0
             new_move = ((row, col), (row, col + move))
-            temp = BC_state(newState.board)
+            temp = BC_state(newState.board, newState.whose_move)
+            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             move += 1
         else:
@@ -379,12 +441,12 @@ def move_like_queen(state, row, col):
             elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
                 newState.board[row + move][col + move] = piece
                 newState.board[row][col] = 0
-                if newState.board[row - 1][col - 1] != 0 and who(newState.board[row - 1][col - 1]) != whose:
+                if is_valid(row - 1, col - 1) and newState.board[row - 1][col - 1] != 0 and who(newState.board[row - 1][col - 1]) != whose:
                     newState.board[row - 1][col - 1] = 0
             elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
                 new_row = row + move
                 new_col = col + move
-                if newState.board[new_row + 1][new_col + 1] != 0 and who(newState.board[new_row + 1][new_col + 1]) != whose:
+                if is_valid(new_row + 1, new_col + 1) and newState.board[new_row + 1][new_col + 1] != 0 and who(newState.board[new_row + 1][new_col + 1]) != whose:
                     if is_valid(new_row + 2, new_col + 2) and newState.board[new_row + 2][new_col + 2] == 0:
                         newState.board[new_row + 1][new_col + 1] = 0
                         new_row += 2
@@ -395,7 +457,8 @@ def move_like_queen(state, row, col):
                 newState.board[row + move][col + move] = piece
                 newState.board[row][col] = 0
             new_move = ((row, col), (row + move, col + move))
-            temp = BC_state(newState.board)
+            temp = BC_state(newState.board, newState.whose_move)
+            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             move += 1
         else:
@@ -452,7 +515,9 @@ def move_king(currentState, row, col):
                     move = ((row, col), (row+i, col+j))
                     newState.board[row+i][col+j] = king
                     newState.board[row][col] = 0
-                    return [[move, newState]]                      
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    return [[move, temp]]                      
                 # move king if empty spot next to it or the opposing teams occupying it
                 if (king == 12 or king == 13) and (currentState.board[row+i][col+j] == 0 or \
                         who(king) != who(currentState.board[row+i][col+j])):
@@ -460,7 +525,9 @@ def move_king(currentState, row, col):
                     newState.board[row+i][col+j] = king
                     newState.board[row][col] = 0
                     move = ((row, col), (row+i, col+j))
-                    possibleStates = possibleStates + [[move, newState]]
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    possibleStates = possibleStates + [[move, temp]]
     return possibleStates
 
 
@@ -472,8 +539,6 @@ def move_king(currentState, row, col):
 def move_pincer(currentState, row, col):
     pincer = currentState.board[row][col]
     possibleStates = []
-    if pincer == 8 or pincer == 9:
-        print("HELLO")
 
     if is_frozen(currentState, row, col):
         return []
@@ -488,7 +553,13 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row+i, col))
                     newState = pincer_capture(newState, row+i, col)
-                    possibleStates = possibleStates + [[move, newState]]
+                    # if newState.whose_move == BLACK:
+                    #     temp = BC_state(newState.board, whose_move=WHITE)
+                    # elif newState.whose_move == WHITE:
+                    #     temp = BC_state(newState.board, whose_move=BLACK)
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    possibleStates = possibleStates + [[move, temp]]
                 else: break
         else:
             if is_valid(row+i+1, col):
@@ -498,7 +569,14 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row+i, col)
                     move = ((row, col), (row+i, col))
-                    return [[move, newState]]
+                    # if newState.whose_move == BLACK:
+                    #     temp = BC_state(newState.board, whose_move=WHITE)
+                    # elif newState.whose_move == WHITE:
+                    #     temp = BC_state(newState.board, whose_move=BLACK)
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    return [[move, temp]]
+                elif currentState.board[row+i][col] != 0: break
     for i in range(1, 8):
         newState = BC_state(currentState.board)
         # north direction
@@ -509,7 +587,13 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row-i, col))
                     newState = pincer_capture(newState, row-i, col)
-                    possibleStates = possibleStates + [[move, newState]]
+                    # if newState.whose_move == BLACK:
+                    #     temp = BC_state(newState.board, whose_move=WHITE)
+                    # elif newState.whose_move == WHITE:
+                    #     temp = BC_state(newState.board, whose_move=BLACK)
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    possibleStates = possibleStates + [[move, temp]]
                 else: break
         else:
             if is_valid(row-i-1, col):
@@ -519,7 +603,14 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row-i, col)
                     move = ((row, col), (row-i, col))
-                    return [[move, newState]]
+                    # if newState.whose_move == BLACK:
+                    #     temp = BC_state(newState.board, whose_move=WHITE)
+                    # elif newState.whose_move == WHITE:
+                    #     temp = BC_state(newState.board, whose_move=BLACK)
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    return [[move, temp]]
+                elif currentState.board[row-i][col] != 0: break
     for i in range(1, 8):
         # east direction
         newState = BC_state(currentState.board)
@@ -530,7 +621,13 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row, col+i))
                     newState = pincer_capture(newState, row, col+i)
-                    possibleStates = possibleStates + [[move, newState]]
+                    # if newState.whose_move == BLACK:
+                    #     temp = BC_state(newState.board, whose_move=WHITE)
+                    # elif newState.whose_move == WHITE:
+                    #     temp = BC_state(newState.board, whose_move=BLACK)
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    possibleStates = possibleStates + [[move, temp]]
                 else: break
         else:
             if is_valid(row, col+i+1):
@@ -540,7 +637,14 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row, col+i)
                     move = ((row, col), (row, col+i))
-                    return [[move, newState]]
+                    # if newState.whose_move == BLACK:
+                    #     temp = BC_state(newState.board, whose_move=WHITE)
+                    # elif newState.whose_move == WHITE:
+                    #     temp = BC_state(newState.board, whose_move=BLACK)
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    return [[move, temp]]
+                elif currentState.board[row][col+i] != 0: break
     for i in range(1, 8):
         # west direction
         newState = BC_state(currentState.board)
@@ -551,7 +655,13 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row, col-i))
                     newState = pincer_capture(newState, row, col-i)
-                    possibleStates = possibleStates + [[move, newState]]
+                    # if newState.whose_move == BLACK:
+                    #     temp = BC_state(newState.board, whose_move=WHITE)
+                    # elif newState.whose_move == WHITE:
+                    #     temp = BC_state(newState.board, whose_move=BLACK)
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    possibleStates = possibleStates + [[move, temp]]
                 else: break
         else:
             if is_valid(row, col-i-1):
@@ -561,8 +671,17 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row, col-i)
                     move = ((row, col), (row, col-i))
-                    return [[move, newState]]
+                    # if newState.whose_move == BLACK:
+                    #     temp = BC_state(newState.board, whose_move=WHITE)
+                    # elif newState.whose_move == WHITE:
+                    #     temp = BC_state(newState.board, whose_move=BLACK)
+                    temp = BC_state(newState.board, newState.whose_move)
+                    #temp.whose_move = 1 - temp.whose_move
+                    return [[move, temp]]
+                elif currentState.board[row][col-i] != 0: break
     # return all possible states for the board
+    # for i in possibleStates:
+    #     print(i[1].whose_move)
     return possibleStates
 
 
@@ -575,7 +694,8 @@ def pincer_capture(newState, row, col):
                 if 0 <= row + 2*i < 8 and 0 <= col + 2*j < 8:
                     if updatedBoard.board[row+i][col+j] != 0 and \
                             who(updatedBoard.board[row+2*i][col+2*j]) == who(updatedBoard.board[row][col]) and \
-                            who(updatedBoard.board[row+i][col+j]) != who(updatedBoard.board[row][col]):
+                            who(updatedBoard.board[row+i][col+j]) != who(updatedBoard.board[row][col]) and \
+                            updatedBoard.board[row+2*i][col+2*j]!= 0:
                         # captured
                         updatedBoard.board[row+i][col+j] = 0
     # return same board if no captures
@@ -591,24 +711,33 @@ def makeMove(currentState, currentRemark, timelimit=10):
     newState = BC_state(currentState.board)
 
     # Fix up whose turn it will be.
-    #newState.whose_move = 1 - currentState.whose_move
+    # newState.whose_move = 1 - currentState.whose_move
     
     startTime = time.perf_counter()
     #while time.perf_counter()-startTime < timelimit - float(.1):
-        
+    
+    s = parameterized_minimax(currentState)
+    print(s)
     # Construct a representation of the move that goes from the
     # currentState to the newState.
     # Here is a placeholder in the right format but with made-up
     # numbers:
 
     
-    successors = generate_successors(currentState)
-    print(successors)
+    # successors = generate_successors(currentState, 1)
+    # s2 = generate_successors(successors[1][1], 2)
+    # s3 = generate_successors(s2[1][1], 3)
+    # s4 = generate_successors(s3[1][1], 4)
+    # print("TESTING")
+    # print(successors[1][1])
+    # print(s2[1][1])
+    # print(s3[1][1])
+    # print(s4[1][1])
 
-    #move = ((6, 4), (3, 4))
-    move = successors[2][0]
-    newState = successors[2][1]
-    newState.whose_move = 1 - currentState.whose_move
+    move = ((6, 4), (3, 4))
+    #move = successors[2][0]
+    #newState = successors[2][1]
+    #newState.whose_move = 1 - currentState.whose_move
     # Make up a new remark
     newRemark = "I'll think harder in some future game. Here's my move"
 
@@ -629,7 +758,7 @@ def translate_move_coord(move):
             fr = fr + letter + str(num)
         if i == 1:
             to = to + letter + str(num)
-    coord = (fr, to)
+    coord = fr+to
     return coord
                 
 
@@ -662,17 +791,28 @@ def prepare(player2Nickname):
 
 
 
+# def basicStaticEval(state):
+# 	'''Use the simple method for state evaluation described in the spec. This is typically
+# 	used in parameterized_minimax calls to verify that minimax and alpha-beta pruning work
+# 	correctly.'''
+#     total = 0
+#     for row in state.board:
+#         for col in row:
+#             total = total + pieceVal(col)
+# 	# The value of the function is the sum of the values of the pieces on the board in the given state
+# 	# total = 0
+# 	# for row in state.board:
+# 	# 	for col in row:
+# 	# 		total = total + pieceVal(col)
+
 def basicStaticEval(state):
-	'''Use the simple method for state evaluation described in the spec. This is typically
-	used in parameterized_minimax calls to verify that minimax and alpha-beta pruning work
-	correctly.'''
+    total = 0
+    for row in state.board:
+        for col in row:
+            total = total + pieceVal(col)
+    return total
 
-	# The value of the function is the sum of the values of the pieces on the board in the given state
-	total = 0
-	for row in state.board:
-		for col in row:
-			total = total + pieceVal(col)
-
+    
 
 def pieceVal(piece):
 	# black pieces
@@ -680,7 +820,7 @@ def pieceVal(piece):
         return -1
     elif piece == BLACK_KING:
         return -100
-    elif who(piece) == BLACK:
+    elif who(piece) == BLACK and piece != 0:
         return -2
 
 	# white pieces
@@ -688,7 +828,7 @@ def pieceVal(piece):
         return 1
     elif piece == WHITE_KING:
         return 100
-    elif who(piece) == WHITE:
+    elif who(piece) == WHITE and piece != 0:
         return 2
 
     # empty spaces

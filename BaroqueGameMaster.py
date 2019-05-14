@@ -11,6 +11,8 @@ import sys
 import BC_checker   # API for accessing web-based move validation.
 TIME_PER_MOVE = 1   # Default time limit is one second.
 TURN_LIMIT = 2      # Good for testing.
+USE_HTML = False
+gameToHTML = False
 #TURN_LIMIT = 100 # Terminates runaway games.
 
 # Get names of players and time limit from the command line.
@@ -137,7 +139,7 @@ def runGame():
             b1 = BC_checker.board_only(currentState)
             b2 = BC_checker.board_only(newState)
             theFile = 'abcdefgh'[j]
-            theRank = str(7 - i)
+            theRank = str(8 - i)
             starting_sq_str = theFile + theRank
             print("Calling the move validation service.")
             (status, result)=BC_checker.validate_move(starting_sq_str, b1, b2)
@@ -210,7 +212,7 @@ def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
     if pt.isAlive():
         print("Took too long.")
         print("We are now terminating the game.")
-        print("Player "+CURRENT_PLAYER+" loses.")
+        print("Player "+str(CURRENT_PLAYER)+" loses.")
         if USE_HTML: gameToHTML.reportResult("Player "+CURRENT_PLAYER+" took too long (%04f seconds) and thus loses." % diff)
         if USE_HTML: gameToHTML.endHTML()
         exit()
