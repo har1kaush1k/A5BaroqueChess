@@ -156,7 +156,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                         #print(ev)
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
                     # print("ev: " + str(ev) + " min: " + str(tempMin))
-                    if ev >= tempMin:
+                    if ev > tempMin:
                         tempState = s
                         tempMin = ev
                         #print(tempState)
@@ -174,7 +174,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                         # print(ev)
                     #print(ev)
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if ev <= tempMax:
+                    if ev < tempMax:
                         tempState = s
                         tempMax = ev
                     # print(ev)
@@ -191,7 +191,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                     # print("STOP")
                     # print(ev)
                     # exit(1)
-                    if ev >= tempMin:
+                    if ev > tempMin:
                         tempState = s
                         tempMin = ev
                 tempEv = tempMin
@@ -204,7 +204,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                     # print("hello: " + str(ev))
                     #exit(1)
                     #print(ev)
-                    if ev <= tempMax:
+                    if ev < tempMax:
                         tempState = s
                         tempMax = ev
                 tempEv = tempMax
@@ -861,7 +861,13 @@ def pincer_capture(newState, row, col):
                             who(updatedBoard.board[row+i][col+j]) != who(updatedBoard.board[row][col]) and \
                             updatedBoard.board[row+2*i][col+2*j]!= 0:
                         # captured
-                        updatedBoard.board[row+i][col+j] = 0
+
+                        # imitator can only capture pincers
+                        if updatedBoard.board[row][col] == 8 and updatedBoard.board[row+i][col+j] == 3 or \
+                            updatedBoard.board[row][col] == 9 and updatedBoard.board[row+i][col+j] == 2:
+                            updatedBoard.board[row+i][col+j] = 0
+                        elif updatedBoard.board[row][col] != 8 and updatedBoard.board[row][col] != 9:
+                            updatedBoard.board[row+i][col+j] = 0
     # return same board if no captures
     # or new board with all the captured pieces removed
     return updatedBoard
@@ -882,8 +888,8 @@ def makeMove(currentState, currentRemark, timelimit=10):
     START_TIME = time.perf_counter()
     bestMove = None
    #s = parameterized_minimax(currentState, ply=MAX_PLY, alphaBeta=False, useBasicStaticEval=False)
-    for ply in range(1, MAX_PLY + 2):
-        s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=False)
+    for ply in range(1, MAX_PLY):
+        s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=True)
         if bestMove == None:
             bestMove = chosenState
         else:
