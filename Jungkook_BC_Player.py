@@ -49,20 +49,12 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
     N_STATIC_EVALS = 0
     N_CUTOFFS = 0
 
-    startTime = time.perf_counter()
-    # using alpha beta pruning
     if alphaBeta:
         alpha = +100000
         beta = -100000
-        pruned_minimaxHelper([[(0, 0), (0, 0)],currentState], alpha, beta, ply, useBasicStaticEval, useZobristHashing)
-        if useBasicStaticEval:
-            provisional = basicStaticEval(chosenState[1])
-        else:
-            provisional = staticEval(chosenState[1])
+        chosenState, provisional = pruned_minimaxHelper([[(0, 0), (0, 0)],currentState], alpha, beta, ply, useBasicStaticEval, useZobristHashing)
     else:
         chosenState, provisional = minimaxHelper([[(0, 0), (0, 0)], currentState], ply, useBasicStaticEval, useZobristHashing)
-        # print(chosenState)
-        #print(provisional)
 
     return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED,
             "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
@@ -74,14 +66,12 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
     if(useBasicStaticEval):
         successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
     
-
     currPly = ply - 1
     finalState = successors[0]
     tempEv = 0
     whose = currentState[1].whose_move
     while time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
         if currPly == 0 or ply == 0:
-            #print('currPly:' + str(currPly))
             tempState = None
             if whose == 1:
                 tempMin = -10000
@@ -91,18 +81,14 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                         ev = basicStaticEval(s[1])
                     else:
                         ev = staticEval(s[1])
-                        #print(ev)
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    # print("ev: " + str(ev) + " min: " + str(tempMin))
                     if not useBasicStaticEval and ev >= tempMin:
                         tempState = s
                         tempMin = ev
                     elif useBasicStaticEval and ev > tempMin:
                         tempState = s
                         tempMin = ev
-                    # print(ev)
                 tempEv = tempMin
-                # print("final ev: " + str(tempMin))
             else:
                 tempMax = 10000
                 for s in successors:
@@ -111,8 +97,6 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                         ev = basicStaticEval(s[1])
                     else:
                         ev = staticEval(s[1])
-                        # print(ev)
-                    #print(ev)
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
                     if not useBasicStaticEval and ev <= tempMax:
                         tempState = s
@@ -120,7 +104,6 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                     elif useBasicStaticEval and ev < tempMin:
                         tempState = s
                         tempMin = ev
-                    # print(ev)
                 tempEv = tempMax
             finalState = tempState
             return tempState, tempEv
@@ -131,9 +114,6 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                 for s in successors:
                     N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                     t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    # print("STOP")
-                    # print(ev)
-                    # exit(1)
                     if not useBasicStaticEval and ev >= tempMin:
                         tempState = s
                         tempMin = ev
@@ -146,10 +126,6 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                 for s in successors:
                     N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                     t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    # print("STOP")
-                    # print("hello: " + str(ev))
-                    #exit(1)
-                    #print(ev)
                     if not useBasicStaticEval and ev <= tempMax:
                         tempState = s
                         tempMax = ev
@@ -174,7 +150,6 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
     whose = currentState[1].whose_move
     while time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
         if currPly == 0 or ply == 0:
-            #print('currPly:' + str(currPly))
             tempState = None
             if whose == 1:
                 tempMin = -10000
@@ -184,9 +159,7 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                         ev = basicStaticEval(s[1])
                     else:
                         ev = staticEval(s[1])
-                        #print(ev)
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    # print("ev: " + str(ev) + " min: " + str(tempMin))
                     if not useBasicStaticEval and ev >= tempMin:
                         tempState = s
                         tempMin = ev
@@ -197,7 +170,6 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                     if beta <= alpha:
                         break
                 tempEv = tempMin
-                # print("final ev: " + str(tempMin))
             else:
                 tempMax = 10000
                 for s in successors:
@@ -206,8 +178,6 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                         ev = basicStaticEval(s[1])
                     else:
                         ev = staticEval(s[1])
-                        # print(ev)
-                    #print(ev)
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
                     if not useBasicStaticEval and ev <= tempMax:
                         tempState = s
@@ -218,7 +188,6 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                     beta = min(beta, tempMax)
                     if beta <= alpha:
                         break
-                    # print(ev)
                 tempEv = tempMax
             finalState = tempState
             return tempState, tempEv
@@ -229,9 +198,6 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                 for s in successors:
                     N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                     t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    # print("STOP")
-                    # print(ev)
-                    # exit(1)
                     if not useBasicStaticEval and ev >= tempMin:
                         tempState = s
                         tempMin = ev
@@ -247,10 +213,6 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                 for s in successors:
                     N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                     t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    # print("STOP")
-                    # print("hello: " + str(ev))
-                    #exit(1)
-                    #print(ev)
                     if not useBasicStaticEval and ev <= tempMax:
                         tempState = s
                         tempMax = ev
@@ -264,65 +226,14 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
             finalState = tempState
     return finalState, tempEv
 
-# def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing):
-#    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
-
-#    if ply == 0:
-#       if useBasicStaticEval:
-#           N_STATIC_EVALS = N_STATIC_EVALS + 1
-#           return basicStaticEval(currentState[1])
-#       else:
-#           N_STATIC_EVALS = N_STATIC_EVALS + 1
-#           return staticEval(currentState[1])
-
-#    successors = generate_successors(currentState[1])
-
-#    if len(successors) == 0:
-#        if ply == MAX_PLY:
-#            chosenState = []
-#        return staticEval(currentState[1])
-
-#    if ply == MAX_PLY:
-#        chosenState = successors[0]
-#        if len(successors) == 1:
-#            return None
-
-#    if currentState[1].whose_move == WHITE:
-#        for s in successors:
-#            N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-#            result = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval, useZobristHashing)
-#            if result > alpha:
-#                alpha = result
-#                if ply == MAX_PLY:
-#                    chosenState = successors[0]
-#            if alpha >= beta:
-#                N_CUTOFFS = N_CUTOFFS + 1
-#                return alpha
-#        return alpha
-
-#    if currentState[1].whose_move == BLACK:
-#        for s in successors:
-#            result = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval, useZobristHashing)
-#            if result < alpha:
-#                beta = result
-#                if ply == MAX_PLY:
-#                    chosenState = successors[0]
-#            if beta <= alpha:
-#                N_CUTOFFS = N_CUTOFFS + 1
-#                return beta
-#        return beta
-
 
 def generate_successors(state):
     successors = []
     new_s = []
     new_turn = 1-state.whose_move
-    # print('successors whose move:' + str(state.whose_move))
-    # print('whose_move: ' + str(state.whose_move))
     for row in range(8):
         for col in range(8):
             piece = state.board[row][col]
-            # if who(sq) == currentState.whose_move and sq > 0:
             if who(piece) == state.whose_move and piece > 0 and not is_frozen(state, row, col):
                 if piece == WHITE_PINCER or piece == BLACK_PINCER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                     successors = successors + move_pincer(state, row, col)
@@ -330,11 +241,8 @@ def generate_successors(state):
                     successors = successors + move_king(state, row, col)
                 if piece > 3 and piece != 12 and piece != 13:
                     successors = successors + move_like_queen(state, row, col)
-    # for s in successors:
-    #     s[1].whose_move = 1 - s[1].whose_move
     for s in successors:
         new_s = new_s + [[s[0], BC_state(s[1].board, new_turn)]]
-    #print(new_s)
     return new_s
 
 
@@ -346,14 +254,11 @@ def is_valid(row, col):
 
 def move_like_queen(state, row, col):
     piece = state.board[row][col]
-    board = state.board
     kings = find_kings(state)
     king_row = kings[0]
     king_col = kings[1]
     whose = who(piece)
     successors = []
-    captures = []
-    # print("move like queen: " + str(whose))
     checking = True
     move = 1
 
@@ -387,7 +292,6 @@ def move_like_queen(state, row, col):
                 newState.board[row][col] = 0
             new_move = ((row, col), (row + move, col))
             temp = BC_state(newState.board, newState.whose_move)
-            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
         else:
             checking = False
@@ -426,7 +330,6 @@ def move_like_queen(state, row, col):
                 newState.board[row][col] = 0
             new_move = ((row, col), (row + move, col - move))
             temp = BC_state(newState.board, newState.whose_move)
-            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
 
         else:
@@ -465,7 +368,6 @@ def move_like_queen(state, row, col):
                 newState.board[row][col] = 0
             new_move = ((row, col), (row, col - move))
             temp = BC_state(newState.board, newState.whose_move)
-            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
 
         else:
@@ -505,7 +407,6 @@ def move_like_queen(state, row, col):
                 newState.board[row][col] = 0
             new_move = ((row, col), (row - move, col - move))
             temp = BC_state(newState.board, newState.whose_move)
-            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
 
         else:
@@ -584,7 +485,6 @@ def move_like_queen(state, row, col):
                 newState.board[row][col] = 0
             new_move = ((row, col), (row - move, col + move))
             temp = BC_state(newState.board, newState.whose_move)
-            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
 
         else:
@@ -623,7 +523,6 @@ def move_like_queen(state, row, col):
                 newState.board[row][col] = 0
             new_move = ((row, col), (row, col + move))
             temp = BC_state(newState.board, newState.whose_move)
-            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             move += 1
         else:
@@ -662,7 +561,6 @@ def move_like_queen(state, row, col):
                 newState.board[row][col] = 0
             new_move = ((row, col), (row + move, col + move))
             temp = BC_state(newState.board, newState.whose_move)
-            #temp.whose_move = 1 - temp.whose_move
             successors = successors + [[new_move, temp]]
             move += 1
         else:
@@ -674,13 +572,6 @@ def is_frozen(state, row, col):
     piece = state.board[row][col]
     frozen = False
     b = state.board
-    # for i in range(-1, 2):
-    #     for j in range(-1, 2):
-    #         if (i != 0 and j != 0) and is_valid(row + i, col + j):
-    #             b = state.board
-    #             if b[row + i][col + j] == 15 or b[row + i][col + j] == 14:
-    #                 if who(b[row + i][col + j]) != who(piece) and piece != 0:
-    #                     frozen = True
 
     if is_valid(row + 1, col) and (b[row + 1][col] == 14 or b[row + 1][col] == 15) and who(b[row + 1][col]) != who(piece) and piece != 0:\
         frozen = True
@@ -741,7 +632,6 @@ def move_king(currentState, row, col):
                     newState.board[row+i][col+j] = king
                     newState.board[row][col] = 0
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     return [[move, temp]]
                 # move king if empty spot next to it or the opposing teams occupying it
                 if (king == 12 or king == 13) and (currentState.board[row+i][col+j] == 0 or \
@@ -751,7 +641,6 @@ def move_king(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row+i, col+j))
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     possibleStates = possibleStates + [[move, temp]]
     return possibleStates
 
@@ -778,12 +667,7 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row+i, col))
                     newState = pincer_capture(newState, row+i, col)
-                    # if newState.whose_move == BLACK:
-                    #     temp = BC_state(newState.board, whose_move=WHITE)
-                    # elif newState.whose_move == WHITE:
-                    #     temp = BC_state(newState.board, whose_move=BLACK)
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     possibleStates = possibleStates + [[move, temp]]
                 else: break
         else:
@@ -794,12 +678,7 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row+i, col)
                     move = ((row, col), (row+i, col))
-                    # if newState.whose_move == BLACK:
-                    #     temp = BC_state(newState.board, whose_move=WHITE)
-                    # elif newState.whose_move == WHITE:
-                    #     temp = BC_state(newState.board, whose_move=BLACK)
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     return [[move, temp]]
                 elif currentState.board[row+i][col] != 0: break
     for i in range(1, 8):
@@ -812,12 +691,7 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row-i, col))
                     newState = pincer_capture(newState, row-i, col)
-                    # if newState.whose_move == BLACK:
-                    #     temp = BC_state(newState.board, whose_move=WHITE)
-                    # elif newState.whose_move == WHITE:
-                    #     temp = BC_state(newState.board, whose_move=BLACK)
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     possibleStates = possibleStates + [[move, temp]]
                 else: break
         else:
@@ -828,12 +702,7 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row-i, col)
                     move = ((row, col), (row-i, col))
-                    # if newState.whose_move == BLACK:
-                    #     temp = BC_state(newState.board, whose_move=WHITE)
-                    # elif newState.whose_move == WHITE:
-                    #     temp = BC_state(newState.board, whose_move=BLACK)
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     return [[move, temp]]
                 elif currentState.board[row-i][col] != 0: break
     for i in range(1, 8):
@@ -846,12 +715,7 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row, col+i))
                     newState = pincer_capture(newState, row, col+i)
-                    # if newState.whose_move == BLACK:
-                    #     temp = BC_state(newState.board, whose_move=WHITE)
-                    # elif newState.whose_move == WHITE:
-                    #     temp = BC_state(newState.board, whose_move=BLACK)
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     possibleStates = possibleStates + [[move, temp]]
                 else: break
         else:
@@ -862,12 +726,7 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row, col+i)
                     move = ((row, col), (row, col+i))
-                    # if newState.whose_move == BLACK:
-                    #     temp = BC_state(newState.board, whose_move=WHITE)
-                    # elif newState.whose_move == WHITE:
-                    #     temp = BC_state(newState.board, whose_move=BLACK)
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     return [[move, temp]]
                 elif currentState.board[row][col+i] != 0: break
     for i in range(1, 8):
@@ -880,12 +739,7 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     move = ((row, col), (row, col-i))
                     newState = pincer_capture(newState, row, col-i)
-                    # if newState.whose_move == BLACK:
-                    #     temp = BC_state(newState.board, whose_move=WHITE)
-                    # elif newState.whose_move == WHITE:
-                    #     temp = BC_state(newState.board, whose_move=BLACK)
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     possibleStates = possibleStates + [[move, temp]]
                 else: break
         else:
@@ -896,17 +750,10 @@ def move_pincer(currentState, row, col):
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row, col-i)
                     move = ((row, col), (row, col-i))
-                    # if newState.whose_move == BLACK:
-                    #     temp = BC_state(newState.board, whose_move=WHITE)
-                    # elif newState.whose_move == WHITE:
-                    #     temp = BC_state(newState.board, whose_move=BLACK)
                     temp = BC_state(newState.board, newState.whose_move)
-                    #temp.whose_move = 1 - temp.whose_move
                     return [[move, temp]]
                 elif currentState.board[row][col-i] != 0: break
     # return all possible states for the board
-    # for i in possibleStates:
-    #     print(i[1].whose_move)
     return possibleStates
 
 
@@ -922,7 +769,6 @@ def pincer_capture(newState, row, col):
                             who(updatedBoard.board[row+i][col+j]) != who(updatedBoard.board[row][col]) and \
                             updatedBoard.board[row+2*i][col+2*j]!= 0:
                         # captured
-
                         # imitator can only capture pincers
                         if updatedBoard.board[row][col] == 8 and updatedBoard.board[row+i][col+j] == 3 or \
                             updatedBoard.board[row][col] == 9 and updatedBoard.board[row+i][col+j] == 2:
@@ -971,33 +817,17 @@ def makeMove(currentState, currentRemark, timelimit=10):
             else:
                 if staticEval(bestMove[1]) < staticEval(chosenState[1]):
                     bestMove = chosenState
-    #     print(ply)
-    print(s)
-    # Construct a representation of the move that goes from the
-    # currentState to the newState.
-    # Here is a placeholder in the right format but with made-up
-    # numbers:
 
-
-    # successors = generate_successors(currentState, 1)
-    # s2 = generate_successors(successors[1][1], 2)
-    # s3 = generate_successors(s2[1][1], 3)
-    # s4 = generate_successors(s3[1][1], 4)
-    # print("TESTING")
-    # print(successors[1][1])
-    # print(s2[1][1])
-    # print(s3[1][1])
-    # print(s4[1][1])
-
-    move = ((6, 4), (3, 4))
-
-    #move = successors[2][0]
-    #newState = successors[2][1]
-    #newState.whose_move = 1 - currentState.whose_move
-    # Make up a new remark
-    newRemark = BASIC_REMARKS[count % 10]
+    if count == 12:
+        newRemark = "I make my move, " + str(bestMove[0]) + ". Nice, yeah?"
+    elif count == 13:
+        newRemark = "Hm... only " + str(getPiece(bestMove[1]) + " pieces left...")
+    else:
+        newRemark = BASIC_REMARKS[count % 12]
+        count = -1
     count = count + 1
     return [bestMove, newRemark]
+
 
 def getPiece(state):
     pieces = 0
@@ -1006,6 +836,7 @@ def getPiece(state):
             if state.board[row][col] != 0:
                 pieces = pieces + 1
     return pieces
+
 
 def translate_move_coord(move):
     fr = ''
@@ -1026,13 +857,12 @@ def translate_move_coord(move):
     return coord
 
 
-
 def nickname():
     return "Jungkook"
 
 
 def introduce():
-    return "I'm Jungkook from BTS, a newbie Baroque Chess agent. " \
+    return "Annyeonghaseyo!! I'm Jungkook from BTS, a newbie Baroque Chess agent. " \
            "I was created by Hari Kaushik (harik98@uw.edu) and Lisa Qing (lisaq2@uw.edu)!"
 
 
@@ -1046,39 +876,28 @@ def prepare(player2Nickname):
 
     # Additional remarks added in can move regarding to what moves are being made
     BASIC_REMARKS = ["I hope this game turns out well for me..., " + OPONENT_NAME + ".",
-                    "This game is getting kind of intense, " + OPONENT_NAME + ".",
+                    "Daebak. This game is getting kind of intense, " + OPONENT_NAME + ".",
                     "I hope you're having fun, " + OPONENT_NAME + ".",
-                    "Wow. I'm getting tired already...",
+                    "Wow. I'm getting tired already... Can someone get me some banana milk",
                     "Why don't you practice some more befor challenging me again.",
-                    "Can you do any better?",
-                    "Sorry, I'm just too good.",
+                    "I'm on a very busy schedule. Can you do any better?",
+                    "Wow, do you know what would make this game better? Listening to my new album.",
+                    "Sorry, I'm just too good. Catch me at the Grammys.",
                     "Can you make this more interesting? I'm getting bored.", 
                     "I have a concert to play at... Can we speed this up, " + OPONENT_NAME + "??",
-                    "I have a lot of fans waiting for me. I need to finish this quickly."]
+                    "I have a lot of fans waiting for me. I need to finish this quickly.",
+                    "Yo, listen to this bop, Boy with Luv. It'll make the game more fun."]
 
-
-
-# def basicStaticEval(state):
-# 	'''Use the simple method for state evaluation described in the spec. This is typically
-# 	used in parameterized_minimax calls to verify that minimax and alpha-beta pruning work
-# 	correctly.'''
-#     total = 0
-#     for row in state.board:
-#         for col in row:
-#             total = total + pieceVal(col)
-# 	# The value of the function is the sum of the values of the pieces on the board in the given state
-# 	# total = 0
-# 	# for row in state.board:
-# 	# 	for col in row:
-# 	# 		total = total + pieceVal(col)
 
 def basicStaticEval(state):
+    '''Use the simple method for state evaluation described in the spec. This is typically
+	used in parameterized_minimax calls to verify that minimax and alpha-beta pruning work
+	correctly.'''
     total = 0
     for row in state.board:
         for col in row:
             total = total + pieceVal(col)
     return total
-
 
 
 def pieceVal(piece):
@@ -1102,19 +921,12 @@ def pieceVal(piece):
     else:
         return 0
 
-# def staticEval(state):
-
-#     '''Compute a more thorough static evaluation of the given state.
-#     This is intended for normal competitive play.  How you design this
-#     function could have a significant impact on your player's ability
-#     to win games.'''
-#     b = state.board
-#     score = 0
-#     for row in range(8):
-#         for col in range(8):
-#     return score
 
 def staticEval(state):
+    '''Compute a more thorough static evaluation of the given state.
+    This is intended for normal competitive play.  How you design this
+    function could have a significant impact on your player's ability
+    to win games.'''
     b = state.board
     score = 0.0
     king_locs = find_kings(state)
@@ -1155,7 +967,7 @@ def staticEval(state):
                                     reduction = piece_vals.get(b[temp_row][temp_col])
                 score += reduction / 10
             
-            if piece == BLACK_PINCER or piece == WHITE_PINCER: # pincher
+            if piece == BLACK_PINCER or piece == WHITE_PINCER: # pincer
                 for i in range(-2, 3, 4):
                     if 0 <= row + i < 8:
                         row_temp = b[row + i][col]
@@ -1175,6 +987,4 @@ def staticEval(state):
                         score += (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
                     if piece == BLACK_PINCER:
                         score -= (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
-
-    # print(score)
     return score
