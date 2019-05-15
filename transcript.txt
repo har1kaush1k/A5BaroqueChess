@@ -1,0 +1,1392 @@
+**** Baroque Chess Gamemaster v1.0-BETA *****
+The Gamemaster says, "Players, introduce yourselves."
+ (Playing WHITE:) Annyeonghaseyo!! I'm Jungkook from BTS, a newbie Baroque Chess agent. I was created by Hari Kaushik (harik98@uw.edu) and Lisa Qing (lisaq2@uw.edu)!
+ (Playing BLACK:) I'm sure you've heard of my older brother, DeepBlue. I may not be good at chess like he is, but but what I lack in skill I make up for in witty one-liners! I'm thinking of a good one... give me a second... just you wait... it's going to be good...
+
+The Gamemaster says, "Let's Play!"
+
+The initial state is...
+c l i w k i l f
+p p p p p p p p
+- - - - - - - -
+- - - - - - - -
+- - - - - - - -
+- - - - - - - -
+P P P P P P P P
+F L I W K I L C
+WHITE's move
+
+Time used in makeMove: 0.8104 seconds out of  1.0
+WHITE's move: the P at (6, 7) to (2, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 1: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+c l i w k i l f
+p p p p p p p p
+- - - - - - - P
+- - - - - - - -
+- - - - - - - -
+- - - - - - - -
+P P P P P P P -
+F L I W K I L C
+BLACK's move
+
+c l i w k i l f
+p - p p p p p p
+- - - - - - - P
+- - - - - - - -
+- - - - - - - -
+- p - - - - - -
+P P P P P P P -
+F L I W K I L C
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 611
+Time elapsed             : 0.9019651412963867
+Time used in makeMove: 0.8957 seconds out of  1.0
+BLACK's move: the p at (1, 1) to (5, 1).
+Calling the move validation service.
+valid move
+valid move
+Turn 2: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+c l i w k i l f
+p - p p p p p p
+- - - - - - - P
+- - - - - - - -
+- - - - - - - -
+- p - - - - - -
+P P P P P P P -
+F L I W K I L C
+WHITE's move
+
+Time used in makeMove: 0.8026 seconds out of  1.0
+WHITE's move: the C at (7, 7) to (3, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 3: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+c l i w k i l f
+p - p p p p p p
+- - - - - - - P
+- - - - - - - C
+- - - - - - - -
+- p - - - - - -
+P P P P P P P -
+F L I W K I L -
+BLACK's move
+
+- l i w k i l f
+p - p p p p p p
+- - - - - - - P
+- - - - - - - C
+- - - - - - - -
+- p - - - c - -
+P P P P P P P -
+F L I W K I L -
+WHITE's move
+
+The secret to my success is good coordination.
+Number of states expanded: 1531
+Time elapsed             : 0.9011240005493164
+Time used in makeMove: 0.8949 seconds out of  1.0
+BLACK's move: the c at (0, 0) to (5, 5).
+Calling the move validation service.
+valid move
+valid move
+Turn 4: Move is by BLACK
+DeepPurple says: The secret to my success is good coordination.
+- l i w k i l f
+p - p p p p p p
+- - - - - - - P
+- - - - - - - C
+- - - - - - - -
+- p - - - c - -
+P P P P P P P -
+F L I W K I L -
+WHITE's move
+
+Time used in makeMove: 0.8176 seconds out of  1.0
+WHITE's move: the L at (7, 6) to (7, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 5: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- l i w k i l f
+p - p p p p p p
+- - - - - - - P
+- - - - - - - C
+- - - - - - - -
+- p - - - c - -
+P P P P P P P -
+F L I W K I - L
+BLACK's move
+
+- - i w k i l f
+p - p p p p p p
+- l - - - - - P
+- - - - - - - C
+- - - - - - - -
+- p - - - c - -
+P P P P P P P -
+F L I W K I - L
+WHITE's move
+
+Time for me to leap in to action.
+Number of states expanded: 2316
+Time elapsed             : 0.9043478965759277
+Time used in makeMove: 0.8981 seconds out of  1.0
+BLACK's move: the l at (0, 1) to (2, 1).
+Calling the move validation service.
+valid move
+valid move
+Turn 6: Move is by BLACK
+DeepPurple says: Time for me to leap in to action.
+- - i w k i l f
+p - p p p p p p
+- l - - - - - P
+- - - - - - - C
+- - - - - - - -
+- p - - - c - -
+P P P P P P P -
+F L I W K I - L
+WHITE's move
+
+Time used in makeMove: 0.8364 seconds out of  1.0
+WHITE's move: the L at (7, 7) to (4, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 7: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - i w k i l f
+p - p p p p p p
+- l - - - - - P
+- - - - - - - C
+- - - - - - - L
+- p - - - c - -
+P P P P P P P -
+F L I W K I - -
+BLACK's move
+
+- - - w k i l f
+p - p p p p p p
+i l - - - - - P
+- - - - - - - C
+- - - - - - - L
+- p - - - c - -
+P P P P P P P -
+F L I W K I - -
+WHITE's move
+
+They say that imitation is the most sincere from of flattery
+Number of states expanded: 3301
+Time elapsed             : 0.9042680263519287
+Time used in makeMove: 0.8981 seconds out of  1.0
+BLACK's move: the i at (0, 2) to (2, 0).
+Calling the move validation service.
+valid move
+valid move
+Turn 8: Move is by BLACK
+DeepPurple says: They say that imitation is the most sincere from of flattery
+- - - w k i l f
+p - p p p p p p
+i l - - - - - P
+- - - - - - - C
+- - - - - - - L
+- p - - - c - -
+P P P P P P P -
+F L I W K I - -
+WHITE's move
+
+Time used in makeMove: 0.8561 seconds out of  1.0
+WHITE's move: the I at (7, 5) to (7, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 9: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - w k i l f
+p - p p p p p p
+i l - - - - - P
+- - - - - - - C
+- - - - - - - L
+- p - - - c - -
+P P P P P P P -
+F L I W K - - I
+BLACK's move
+
+Time out at minimax 2
+Broken traversal: True
+Time out at minimax 2
+Broken traversal: True
+- - - w k i l f
+p - - p p p p p
+i l - - - - - P
+- - - - - - - C
+- - - - - - - L
+- p p - - c - -
+P P P P P P P -
+F L I W K - - I
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 4547
+Time elapsed             : 0.9003119468688965
+Time used in makeMove: 0.8942 seconds out of  1.0
+BLACK's move: the p at (1, 2) to (5, 2).
+Calling the move validation service.
+valid move
+valid move
+Turn 10: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - w k i l f
+p - - p p p p p
+i l - - - - - P
+- - - - - - - C
+- - - - - - - L
+- p p - - c - -
+P P P P P P P -
+F L I W K - - I
+WHITE's move
+
+Time used in makeMove: 0.8591 seconds out of  1.0
+WHITE's move: the C at (3, 7) to (3, 2).
+Calling the move validation service.
+valid move
+valid move
+Turn 11: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - w k i l f
+p - - p p p p p
+i l - - - - - P
+- - C - - - - -
+- - - - - - - L
+- p p - - c - -
+P P P P P P P -
+F L I W K - - I
+BLACK's move
+
+- - - - k i l f
+p - w p p p p p
+i l - - - - - P
+- - C - - - - -
+- - - - - - - L
+- p p - - c - -
+P P P P P P P -
+F L I W K - - I
+WHITE's move
+
+I think it's time for you to withdraw from this match.
+Number of states expanded: 5337
+Time elapsed             : 0.9033308029174805
+Time used in makeMove: 0.8972 seconds out of  1.0
+BLACK's move: the w at (0, 3) to (1, 2).
+Calling the move validation service.
+valid move
+valid move
+Turn 12: Move is by BLACK
+DeepPurple says: I think it's time for you to withdraw from this match.
+- - - - k i l f
+p - w p p p p p
+i l - - - - - P
+- - C - - - - -
+- - - - - - - L
+- p p - - c - -
+P P P P P P P -
+F L I W K - - I
+WHITE's move
+
+Time used in makeMove: 0.8622 seconds out of  1.0
+WHITE's move: the P at (2, 7) to (3, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 13: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k i l f
+p - w p p p p p
+i l - - - - - -
+- - C - - - - P
+- - - - - - - L
+- p p - - c - -
+P P P P P P P -
+F L I W K - - I
+BLACK's move
+
+Time out at minimax 2
+Broken traversal: True
+Time out at minimax 2
+Broken traversal: True
+- - - - k i l f
+p - w p p p - p
+i l - - - - - -
+- - C - - - - P
+- - - - - - - L
+- p p - - c p -
+P P P P P P P -
+F L I W K - - I
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 6509
+Time elapsed             : 0.9002742767333984
+Time used in makeMove: 0.8942 seconds out of  1.0
+BLACK's move: the p at (1, 6) to (5, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 14: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - k i l f
+p - w p p p - p
+i l - - - - - -
+- - C - - - - P
+- - - - - - - L
+- p p - - c p -
+P P P P P P P -
+F L I W K - - I
+WHITE's move
+
+Time used in makeMove: 0.8439 seconds out of  1.0
+WHITE's move: the I at (7, 7) to (5, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 15: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k i l f
+p - w p p p - p
+i l - - - - - -
+- - C - - - - P
+- - - - - - - L
+- p p - - c p I
+P P P P P P P -
+F L I W K - - -
+BLACK's move
+
+- - - - k - l f
+p - w p p p - p
+i l - - - - - i
+- - C - - - - P
+- - - - - - - L
+- p p - - c p I
+P P P P P P P -
+F L I W K - - -
+WHITE's move
+
+They say that imitation is the most sincere from of flattery
+Number of states expanded: 7273
+Time elapsed             : 0.9025721549987793
+Time used in makeMove: 0.8965 seconds out of  1.0
+BLACK's move: the i at (0, 5) to (2, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 16: Move is by BLACK
+DeepPurple says: They say that imitation is the most sincere from of flattery
+- - - - k - l f
+p - w p p p - p
+i l - - - - - i
+- - C - - - - P
+- - - - - - - L
+- p p - - c p I
+P P P P P P P -
+F L I W K - - -
+WHITE's move
+
+Time used in makeMove: 0.8717 seconds out of  1.0
+WHITE's move: the K at (7, 4) to (7, 5).
+Calling the move validation service.
+valid move
+valid move
+Turn 17: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k - l f
+p - w p p p - p
+i l - - - - - i
+- - C - - - - P
+- - - - - - - L
+- p p - - c p I
+P P P P P P P -
+F L I W - K - -
+BLACK's move
+
+- - - - k - l -
+p - w p p p - p
+i l - - - - - i
+- - C - - - - P
+- - - f - - - L
+- p p - - c p I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+FREEZE!
+Number of states expanded: 7927
+Time elapsed             : 0.9012620449066162
+Time used in makeMove: 0.8961 seconds out of  1.0
+BLACK's move: the f at (0, 7) to (4, 3).
+Calling the move validation service.
+valid move
+valid move
+Turn 18: Move is by BLACK
+DeepPurple says: FREEZE!
+- - - - k - l -
+p - w p p p - p
+i l - - - - - i
+- - C - - - - P
+- - - f - - - L
+- p p - - c p I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Time used in makeMove: 0.8287 seconds out of  1.0
+WHITE's move: the L at (4, 7) to (4, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 19: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k - l -
+p - w p p p - p
+i l - - - - - i
+- - C - - - - P
+- - L - - - - -
+- p p - - c p I
+P P P P P P P -
+F L I W - K - -
+BLACK's move
+
+- - - - k - l -
+p - w p p p - p
+- l - - - - - i
+- - C - - - - P
+- - - - - - - -
+- p p i - c p I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Don't mind me, just a normal leaper...
+Number of states expanded: 8523
+Time elapsed             : 0.904076099395752
+Time used in makeMove: 0.8979 seconds out of  1.0
+BLACK's move: the i at (2, 0) to (5, 3).
+Calling the move validation service.
+valid move
+valid move
+Turn 20: Move is by BLACK
+DeepPurple says: Don't mind me, just a normal leaper...
+- - - - k - l -
+p - w p p p - p
+- l - - - - - i
+- - C - - - - P
+- - - - - - - -
+- p p i - c p I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Time used in makeMove: 0.8355 seconds out of  1.0
+WHITE's move: the C at (3, 2) to (5, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 21: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k - l -
+p - w p p p - p
+- l - - - - - i
+- - - - - - - P
+- - - - - - - -
+- p p i C - p I
+P P P P P P P -
+F L I W - K - -
+BLACK's move
+
+- - - - k - l -
+p - w p p - - p
+- l - - - - - i
+- - - - - - - P
+- - - - - - - -
+- p p i - p p I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Give 'em the clamps!
+Number of states expanded: 9620
+Time elapsed             : 0.9023120403289795
+Time used in makeMove: 0.8961 seconds out of  1.0
+BLACK's move: the p at (1, 5) to (5, 5).
+Calling the move validation service.
+valid move
+valid move
+Turn 22: Move is by BLACK
+DeepPurple says: Give 'em the clamps!
+- - - - k - l -
+p - w p p - - p
+- l - - - - - i
+- - - - - - - P
+- - - - - - - -
+- p p i - p p I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Time used in makeMove: 0.8447 seconds out of  1.0
+WHITE's move: the P at (3, 7) to (4, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 23: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k - l -
+p - w p p - - p
+- l - - - - - i
+- - - - - - - -
+- - - - - - - P
+- p p i - p p I
+P P P P P P P -
+F L I W - K - -
+BLACK's move
+
+- - - - k - l -
+p - w p - - - p
+- l - - - - - i
+- - - - - - - -
+- - - - p - - P
+- p p i - p p I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 10148
+Time elapsed             : 0.9053351879119873
+Time used in makeMove: 0.9004 seconds out of  1.0
+BLACK's move: the p at (1, 4) to (4, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 24: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - k - l -
+p - w p - - - p
+- l - - - - - i
+- - - - - - - -
+- - - - p - - P
+- p p i - p p I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Time used in makeMove: 0.8097 seconds out of  1.0
+WHITE's move: the P at (4, 7) to (4, 5).
+Calling the move validation service.
+valid move
+valid move
+Turn 25: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k - l -
+p - w p - - - p
+- l - - - - - i
+- - - - - - - -
+- - - - p P - -
+- p p i - - p I
+P P P P P P P -
+F L I W - K - -
+BLACK's move
+
+- - - - k - l -
+p - w p - - - p
+- l - - - - - i
+- - - - - - - -
+- - - - p - p -
+- p p i - - - I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Give 'em the clamps!
+Number of states expanded: 11115
+Time elapsed             : 0.9075100421905518
+Time used in makeMove: 0.9014 seconds out of  1.0
+BLACK's move: the p at (5, 6) to (4, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 26: Move is by BLACK
+DeepPurple says: Give 'em the clamps!
+- - - - k - l -
+p - w p - - - p
+- l - - - - - i
+- - - - - - - -
+- - - - p - p -
+- p p i - - - I
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Time used in makeMove: 0.8098 seconds out of  1.0
+WHITE's move: the I at (5, 7) to (5, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 27: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k - l -
+p - w p - - - p
+- l - - - - - i
+- - - - - - - -
+- - - - p - p -
+- p p i I - - -
+P P P P P P P -
+F L I W - K - -
+BLACK's move
+
+- - - - k - - -
+p - w p - - l p
+- l - - - - - i
+- - - - - - - -
+- - - - p - p -
+- p p i I - - -
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Looks like this is going to be a leap year!
+Number of states expanded: 11574
+Time elapsed             : 0.9043910503387451
+Time used in makeMove: 0.8989 seconds out of  1.0
+BLACK's move: the l at (0, 6) to (1, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 28: Move is by BLACK
+DeepPurple says: Looks like this is going to be a leap year!
+- - - - k - - -
+p - w p - - l p
+- l - - - - - i
+- - - - - - - -
+- - - - p - p -
+- p p i I - - -
+P P P P P P P -
+F L I W - K - -
+WHITE's move
+
+Time used in makeMove: 0.8207 seconds out of  1.0
+WHITE's move: the P at (6, 6) to (6, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 29: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - k - - -
+p - w p - - l p
+- l - - - - - i
+- - - - - - - -
+- - - - p - p -
+- p p i I - - -
+P P P P P P - P
+F L I W - K - -
+BLACK's move
+
+- - - - - - - -
+p - w p - k l p
+- l - - - - - i
+- - - - - - - -
+- - - - p - p -
+- p p i I - - -
+P P P P P P - P
+F L I W - K - -
+WHITE's move
+
+Let me just get this out of the way...
+Number of states expanded: 11939
+Time elapsed             : 0.9036848545074463
+Time used in makeMove: 0.8976 seconds out of  1.0
+BLACK's move: the k at (0, 4) to (1, 5).
+Calling the move validation service.
+valid move
+valid move
+Turn 30: Move is by BLACK
+DeepPurple says: Let me just get this out of the way...
+- - - - - - - -
+p - w p - k l p
+- l - - - - - i
+- - - - - - - -
+- - - - p - p -
+- p p i I - - -
+P P P P P P - P
+F L I W - K - -
+WHITE's move
+
+Time used in makeMove: 0.8346 seconds out of  1.0
+WHITE's move: the I at (5, 4) to (3, 2).
+Calling the move validation service.
+valid move
+valid move
+Turn 31: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+p - w p - k l p
+- l - - - - - i
+- - I - - - - -
+- - - - p - p -
+- p p i - - - -
+P P P P P P - P
+F L I W - K - -
+BLACK's move
+
+- - - - - - - -
+p - w p - k l p
+- - - - - - - i
+- - - - - - - -
+- - - l p - p -
+- p p i - - - -
+P P P P P P - P
+F L I W - K - -
+WHITE's move
+
+Looks like this is going to be a leap year!
+Number of states expanded: 12730
+Time elapsed             : 0.9019031524658203
+Time used in makeMove: 0.8957 seconds out of  1.0
+BLACK's move: the l at (2, 1) to (4, 3).
+Calling the move validation service.
+valid move
+valid move
+Turn 32: Move is by BLACK
+DeepPurple says: Looks like this is going to be a leap year!
+- - - - - - - -
+p - w p - k l p
+- - - - - - - i
+- - - - - - - -
+- - - l p - p -
+- p p i - - - -
+P P P P P P - P
+F L I W - K - -
+WHITE's move
+
+Time used in makeMove: 0.8493 seconds out of  1.0
+WHITE's move: the K at (7, 5) to (7, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 33: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+p - w p - k l p
+- - - - - - - i
+- - - - - - - -
+- - - l p - p -
+- p p i - - - -
+P P P P P P - P
+F L I W - - K -
+BLACK's move
+
+- - - - - - - -
+- - w p - k l p
+- - - - - - - i
+- - - - - - - -
+- - - l p - p -
+p p p i - - - -
+P P P P P P - P
+F L I W - - K -
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 13096
+Time elapsed             : 0.9003469944000244
+Time used in makeMove: 0.8954 seconds out of  1.0
+BLACK's move: the p at (1, 0) to (5, 0).
+Calling the move validation service.
+valid move
+valid move
+Turn 34: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - - - - -
+- - w p - k l p
+- - - - - - - i
+- - - - - - - -
+- - - l p - p -
+p p p i - - - -
+P P P P P P - P
+F L I W - - K -
+WHITE's move
+
+Time used in makeMove: 0.8360 seconds out of  1.0
+WHITE's move: the P at (6, 4) to (7, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 35: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w p - k l p
+- - - - - - - i
+- - - - - - - -
+- - - l p - p -
+p p p i - - - -
+P P P P - P - P
+F L I W P - K -
+BLACK's move
+
+- - - - - - - -
+- - w - - k l p
+- - - p - - - i
+- - - - - - - -
+- - - l p - p -
+p p p i - - - -
+P P P P - P - P
+F L I W P - K -
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 13686
+Time elapsed             : 0.9054131507873535
+Time used in makeMove: 0.8993 seconds out of  1.0
+BLACK's move: the p at (1, 3) to (2, 3).
+Calling the move validation service.
+valid move
+valid move
+Turn 36: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - - - - -
+- - w - - k l p
+- - - p - - - i
+- - - - - - - -
+- - - l p - p -
+p p p i - - - -
+P P P P - P - P
+F L I W P - K -
+WHITE's move
+
+Time used in makeMove: 0.8237 seconds out of  1.0
+WHITE's move: the P at (7, 4) to (6, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 37: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k l p
+- - - p - - - i
+- - - - - - - -
+- - - l p - p -
+p p p i - - - -
+P P P P P P - P
+F L I W - - K -
+BLACK's move
+
+- - - - - - - -
+- - w - - k l p
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i i - - -
+P P P P P P - P
+F L I W - - K -
+WHITE's move
+
+They say that imitation is the most sincere from of flattery
+Number of states expanded: 14021
+Time elapsed             : 0.901303768157959
+Time used in makeMove: 0.8956 seconds out of  1.0
+BLACK's move: the i at (2, 7) to (5, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 38: Move is by BLACK
+DeepPurple says: They say that imitation is the most sincere from of flattery
+- - - - - - - -
+- - w - - k l p
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i i - - -
+P P P P P P - P
+F L I W - - K -
+WHITE's move
+
+Time used in makeMove: 0.9502 seconds out of  1.0
+WHITE's move: the P at (6, 4) to (7, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 39: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k l p
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i i - - -
+P P P P - P - P
+F L I W P - K -
+BLACK's move
+
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i i - - p
+P P P P - P - P
+F L I W P - K -
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 14729
+Time elapsed             : 0.9048788547515869
+Time used in makeMove: 0.8988 seconds out of  1.0
+BLACK's move: the p at (1, 7) to (5, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 40: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i i - - p
+P P P P - P - P
+F L I W P - K -
+WHITE's move
+
+Time used in makeMove: 0.8275 seconds out of  1.0
+WHITE's move: the K at (7, 6) to (7, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 41: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i i - - p
+P P P P - P - P
+F L I W P - - K
+BLACK's move
+
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i - - - p
+P P P P i P - P
+F L I W P - - K
+WHITE's move
+
+They say that imitation is the most sincere from of flattery
+Number of states expanded: 15700
+Time elapsed             : 0.9032080173492432
+Time used in makeMove: 0.8983 seconds out of  1.0
+BLACK's move: the i at (5, 4) to (6, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 42: Move is by BLACK
+DeepPurple says: They say that imitation is the most sincere from of flattery
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i - - - p
+P P P P i P - P
+F L I W P - - K
+WHITE's move
+
+Time used in makeMove: 0.8324 seconds out of  1.0
+WHITE's move: the K at (7, 7) to (7, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 43: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i - - - p
+P P P P i P - P
+F L I W P - K -
+BLACK's move
+
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i - p - -
+P P P P i P - P
+F L I W P - K -
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 16112
+Time elapsed             : 0.9012110233306885
+Time used in makeMove: 0.8950 seconds out of  1.0
+BLACK's move: the p at (5, 7) to (5, 5).
+Calling the move validation service.
+valid move
+valid move
+Turn 44: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i - p - -
+P P P P i P - P
+F L I W P - K -
+WHITE's move
+
+Time used in makeMove: 0.8282 seconds out of  1.0
+WHITE's move: the K at (7, 6) to (7, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 45: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l p - p -
+p p p i - p - -
+P P P P i P - P
+F L I W P - - K
+BLACK's move
+
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - p -
+p p p i p p - -
+P P P P i P - P
+F L I W P - - K
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 16628
+Time elapsed             : 0.9009437561035156
+Time used in makeMove: 0.8948 seconds out of  1.0
+BLACK's move: the p at (4, 4) to (5, 4).
+Calling the move validation service.
+valid move
+valid move
+Turn 46: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - p -
+p p p i p p - -
+P P P P i P - P
+F L I W P - - K
+WHITE's move
+
+Time used in makeMove: 0.8327 seconds out of  1.0
+WHITE's move: the K at (7, 7) to (7, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 47: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - p -
+p p p i p p - -
+P P P P i P - P
+F L I W P - K -
+BLACK's move
+
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - p
+p p p i p p - -
+P P P P i P - P
+F L I W P - K -
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 17135
+Time elapsed             : 0.9031403064727783
+Time used in makeMove: 0.8970 seconds out of  1.0
+BLACK's move: the p at (4, 6) to (4, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 48: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - p
+p p p i p p - -
+P P P P i P - P
+F L I W P - K -
+WHITE's move
+
+Time used in makeMove: 0.8127 seconds out of  1.0
+WHITE's move: the K at (7, 6) to (7, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 49: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - p
+p p p i p p - -
+P P P P i P - P
+F L I W P - - K
+BLACK's move
+
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p - p
+P P P P i P - P
+F L I W P - - K
+WHITE's move
+
+I'm gonna pince you!
+Number of states expanded: 17593
+Time elapsed             : 0.903792142868042
+Time used in makeMove: 0.8989 seconds out of  1.0
+BLACK's move: the p at (4, 7) to (5, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 50: Move is by BLACK
+DeepPurple says: I'm gonna pince you!
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p - p
+P P P P i P - P
+F L I W P - - K
+WHITE's move
+
+Time used in makeMove: 0.8260 seconds out of  1.0
+WHITE's move: the K at (7, 7) to (7, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 51: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k l -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p - p
+P P P P i P - P
+F L I W P - K -
+BLACK's move
+
+- - - - - - - -
+- - w - - k - -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P - P
+F L I W P - K -
+WHITE's move
+
+Time for me to leap in to action.
+Number of states expanded: 18159
+Time elapsed             : 0.9063358306884766
+Time used in makeMove: 0.9003 seconds out of  1.0
+BLACK's move: the l at (1, 6) to (5, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 52: Move is by BLACK
+DeepPurple says: Time for me to leap in to action.
+- - - - - - - -
+- - w - - k - -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P - P
+F L I W P - K -
+WHITE's move
+
+Time used in makeMove: 0.8204 seconds out of  1.0
+WHITE's move: the P at (7, 4) to (7, 5).
+Calling the move validation service.
+valid move
+valid move
+Turn 53: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - k - -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P - P
+F L I W - P K -
+BLACK's move
+
+- - - - - - - -
+- - w - - - k -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P - P
+F L I W - P K -
+WHITE's move
+
+Let me just get this out of the way...
+Number of states expanded: 18675
+Time elapsed             : 0.903069019317627
+Time used in makeMove: 0.8970 seconds out of  1.0
+BLACK's move: the k at (1, 5) to (1, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 54: Move is by BLACK
+DeepPurple says: Let me just get this out of the way...
+- - - - - - - -
+- - w - - - k -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P - P
+F L I W - P K -
+WHITE's move
+
+Time used in makeMove: 0.8280 seconds out of  1.0
+WHITE's move: the P at (6, 7) to (7, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 55: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - - k -
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P - -
+F L I W - P K P
+BLACK's move
+
+- - - - - - - -
+- - w - - - - k
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P - -
+F L I W - P K P
+WHITE's move
+
+Let me just get this out of the way...
+Number of states expanded: 19237
+Time elapsed             : 0.9002001285552979
+Time used in makeMove: 0.8945 seconds out of  1.0
+BLACK's move: the k at (1, 6) to (1, 7).
+Calling the move validation service.
+valid move
+valid move
+Turn 56: Move is by BLACK
+DeepPurple says: Let me just get this out of the way...
+- - - - - - - -
+- - w - - - - k
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P - -
+F L I W - P K P
+WHITE's move
+
+Time used in makeMove: 0.8007 seconds out of  1.0
+WHITE's move: the K at (7, 6) to (6, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 57: Move is by WHITE
+Jungkook says: I hope this game turns out well for me..., DeepPurple.
+- - - - - - - -
+- - w - - - - k
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p l p
+P P P P i P K -
+F L I W - P - P
+BLACK's move
+
+- - - - - - - -
+- - w - - - - k
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p - p
+P P P P i P - -
+F L I W - P l P
+WHITE's move
+
+Looks like this is going to be a leap year!
+Number of states expanded: 19688
+Time elapsed             : 0.905951976776123
+Time used in makeMove: 0.8999 seconds out of  1.0
+BLACK's move: the l at (5, 6) to (7, 6).
+Calling the move validation service.
+valid move
+valid move
+Turn 58: Move is by BLACK
+DeepPurple says: Looks like this is going to be a leap year!
+- - - - - - - -
+- - w - - - - k
+- - - p - - - -
+- - - - - - - -
+- - - l - - - -
+p p p i p p - p
+P P P P i P - -
+F L I W - P l P
+WHITE's move
+
+Win for BLACK
+Game over.
+Congratulations to the winner: BLACK

@@ -91,7 +91,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                     else:
                         ev = staticEval(s[1])
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if not useBasicStaticEval and ev >= tempMin:
+                    if not useBasicStaticEval and ev > tempMin:
                         tempState = s
                         tempMin = ev
                     elif useBasicStaticEval and ev > tempMin:
@@ -107,7 +107,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                     else:
                         ev = staticEval(s[1])
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if not useBasicStaticEval and ev <= tempMax:
+                    if not useBasicStaticEval and ev < tempMax:
                         tempState = s
                         tempMax = ev
                     elif useBasicStaticEval and ev < tempMin:
@@ -123,7 +123,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                 for s in successors:
                     N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                     t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    if not useBasicStaticEval and ev >= tempMin:
+                    if not useBasicStaticEval and ev > tempMin:
                         tempState = s
                         tempMin = ev
                     elif useBasicStaticEval and ev > tempMin:
@@ -135,7 +135,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                 for s in successors:
                     N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                     t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    if not useBasicStaticEval and ev <= tempMax:
+                    if not useBasicStaticEval and ev < tempMax:
                         tempState = s
                         tempMax = ev
                     elif useBasicStaticEval and ev < tempMax:
@@ -582,21 +582,29 @@ def is_frozen(state, row, col):
     frozen = False
     b = state.board
 
-    if is_valid(row + 1, col) and (b[row + 1][col] == 14 or b[row + 1][col] == 15) and who(b[row + 1][col]) != who(piece) and piece != 0:\
+    if is_valid(row + 1, col) and (b[row + 1][col] == 14 or b[row + 1][col] == 15 or ((b[row + 1][col] == 8 or b[row + 1][col] == 9) and (piece == 14 or piece == 15))) and \
+            who(b[row + 1][col]) != who(piece) and piece != 0:
         frozen = True
-    if is_valid(row + 1, col - 1) and (b[row + 1][col - 1] == 14 or b[row + 1][col - 1] == 15) and who(b[row + 1][col - 1]) != who(piece) and piece != 0:\
+    if is_valid(row + 1, col - 1) and (b[row + 1][col - 1] == 14 or b[row + 1][col - 1] == 15 or ((b[row + 1][col - 1] == 8 or b[row + 1][col - 1] == 9) and \
+            (piece == 14 or piece == 15))) and who(b[row + 1][col - 1]) != who(piece) and piece != 0:\
         frozen = True
-    if is_valid(row, col - 1) and (b[row][col - 1] == 14 or b[row][col - 1] == 15) and who(b[row][col - 1]) != who(piece) and piece != 0:\
+    if is_valid(row, col - 1) and (b[row][col - 1] == 14 or b[row][col - 1] == 15 or ((b[row][col - 1] == 8 or b[row][col - 1] == 9) and (piece == 14 or piece == 15))) and \
+            who(b[row][col - 1]) != who(piece) and piece != 0:\
         frozen = True
-    if is_valid(row - 1, col - 1) and (b[row - 1][col - 1] == 14 or b[row - 1][col - 1] == 15) and who(b[row - 1][col - 1]) != who(piece) and piece != 0:\
+    if is_valid(row - 1, col - 1) and (b[row - 1][col - 1] == 14 or b[row - 1][col - 1] == 15 or ((b[row - 1][col - 1] == 8 or b[row - 1][col - 1] == 9) and \
+            (piece == 14 or piece == 15))) and who(b[row - 1][col - 1]) != who(piece) and piece != 0:\
         frozen = True
-    if is_valid(row - 1, col) and (b[row - 1][col] == 14 or b[row - 1][col] == 15) and who(b[row - 1][col]) != who(piece) and piece != 0:\
+    if is_valid(row - 1, col) and (b[row - 1][col] == 14 or b[row - 1][col] == 15 or ((b[row - 1][col] == 8 or b[row - 1][col] == 9) and (piece == 14 or piece == 15))) and \
+            who(b[row - 1][col]) != who(piece) and piece != 0:\
         frozen = True
-    if is_valid(row - 1, col + 1) and (b[row - 1][col + 1] == 14 or b[row - 1][col + 1] == 15) and who(b[row - 1][col + 1]) != who(piece) and piece != 0:\
+    if is_valid(row - 1, col + 1) and (b[row - 1][col + 1] == 14 or b[row - 1][col + 1] == 15 or ((b[row - 1][col + 1] == 8 or b[row - 1][col + 1] == 9) and \
+            (piece == 14 or piece == 15))) and who(b[row - 1][col + 1]) != who(piece) and piece != 0:\
         frozen = True
-    if is_valid(row, col + 1) and (b[row][col + 1] == 14 or b[row][col + 1] == 15) and who(b[row][col + 1]) != who(piece) and piece != 0:\
+    if is_valid(row, col + 1) and (b[row][col + 1] == 14 or b[row][col + 1] == 15 or ((b[row][col + 1] == 8 or b[row][col + 1] == 9) and (piece == 14 or piece == 15))) and \
+            who(b[row][col + 1]) != who(piece) and piece != 0:\
         frozen = True
-    if is_valid(row + 1, col + 1) and (b[row + 1][col + 1] == 14 or b[row + 1][col + 1] == 15) and who(b[row + 1][col + 1]) != who(piece) and piece != 0:\
+    if is_valid(row + 1, col + 1) and (b[row + 1][col + 1] == 14 or b[row + 1][col + 1] == 15 or ((b[row + 1][col + 1] == 8 or b[row + 1][col + 1] == 9) and \
+            (piece == 14 or piece == 15))) and who(b[row + 1][col + 1]) != who(piece) and piece != 0:\
         frozen = True
     
     
@@ -682,7 +690,8 @@ def move_pincer(currentState, row, col):
         else:
             if is_valid(row+i+1, col):
                 if (currentState.board[row+i+1][col] == 3 or currentState.board[row+i+1][col] == 2) and \
-                        who(currentState.board[row+i+1][col]) != who(currentState.board[row][col]):
+                        who(currentState.board[row+i+1][col]) != who(currentState.board[row][col]) and \
+                            newState.board[row + i][col] == 0:
                     newState.board[row+i][col] = pincer
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row+i, col)
@@ -706,7 +715,8 @@ def move_pincer(currentState, row, col):
         else:
             if is_valid(row-i-1, col):
                 if (currentState.board[row-i-1][col] == 3 or currentState.board[row-i-1][col] == 2) and \
-                        who(currentState.board[row-i-1][col]) != who(currentState.board[row][col]):
+                        who(currentState.board[row-i-1][col]) != who(currentState.board[row][col]) and \
+                            newState.board[row-i][col] == 0:
                     newState.board[row-i][col] = pincer
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row-i, col)
@@ -730,7 +740,8 @@ def move_pincer(currentState, row, col):
         else:
             if is_valid(row, col+i+1):
                 if (currentState.board[row][col+i+1] == 3 or currentState.board[row][col+i+1] == 2) and \
-                        who(currentState.board[row][col+i+1]) != who(currentState.board[row][col]):
+                        who(currentState.board[row][col+i+1]) != who(currentState.board[row][col]) and \
+                            newState.board[row][col+i] == 0:
                     newState.board[row][col+i] = pincer
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row, col+i)
@@ -754,7 +765,8 @@ def move_pincer(currentState, row, col):
         else:
             if is_valid(row, col-i-1):
                 if (currentState.board[row][col-i-1] == 3 or currentState.board[row][col-i-1] == 2) and \
-                        who(currentState.board[row][col-i-1]) != who(currentState.board[row][col]):
+                        who(currentState.board[row][col-i-1]) != who(currentState.board[row][col]) and \
+                            newState.board[row][col-i] == 0:
                     newState.board[row][col-i] = pincer
                     newState.board[row][col] = 0
                     newState = pincer_capture(newState, row, col-i)
@@ -944,6 +956,10 @@ def staticEval(state):
         for col in range(8):
             piece = b[row][col]
             score += piece_vals.get(piece) # - (0.25 * middle_vals[row][col] * -1 ** whose)
+            if who(piece) == BLACK and piece != 0:
+                score -= piece_advance[row][col] * 5
+            elif who(piece) == WHITE:
+                score += piece_advance[7-row][col] * 5
             if piece == BLACK_KING:
                 score -= (2 * edge_vals[row][col])
             elif piece == WHITE_KING:
@@ -957,7 +973,7 @@ def staticEval(state):
                     score += 5
 
             if is_frozen(state, row, col):
-                score -= 0.1 * piece_vals.get(piece) * middle_vals[row][col]
+                score -= 0.75 * piece_vals.get(piece)
 
             if piece == BLACK_WITHDRAWER or piece == WHITE_WITHDRAWER:
                 reduction = 0
@@ -980,20 +996,24 @@ def staticEval(state):
                 for i in range(-2, 3, 4):
                     if 0 <= row + i < 8:
                         row_temp = b[row + i][col]
-                        if row_temp is piece:
+                        if row_temp == piece:
                             score += piece_vals.get(row_temp) / 4
                     if 0 <= col + i < 8:
                         col_temp = b[row][col + i]
-                        if col_temp is piece:
+                        if col_temp == piece:
                             score += piece_vals.get(col_temp) / 4
-                if who(piece) == whose:
-                    if piece == BLACK_PINCER:
+                
+                if piece == BLACK_PINCER:
+                    if who(piece) == whose:
                         score -= (8 - (abs(row - king_locs[0]) + abs(col - king_locs[1])))
-                    if piece == WHITE_PINCER: 
-                        score += (8 - (abs(row - king_locs[0]) + abs(col - king_locs[1])))
-                elif who(piece) != whose:
-                    if piece == WHITE_PINCER: 
-                        score += (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
-                    if piece == BLACK_PINCER:
+                    elif who(piece) != whose:
                         score -= (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
+                    score -= middle_vals[row][col]
+                if piece == WHITE_PINCER: 
+                    if who(piece) == whose:
+                        score += (8 - (abs(row - king_locs[0]) + abs(col - king_locs[1])))
+                    elif who(piece) != whose:
+                        score += (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
+                    score += middle_vals[row][col]
+                        
     return score
