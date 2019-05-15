@@ -876,7 +876,7 @@ def pincer_capture(newState, row, col):
 def makeMove(currentState, currentRemark, timelimit=10):
     # Compute the new state for a move.
     # You should implement an anytime algorithm based on IDDFS.
-    global count, chosenState, BASIC_REMARKS
+    global count, chosenState, BASIC_REMARKS, MAX_PLY
     # The following is a placeholder that just copies the current state.
     newState = BC_state(currentState.board)
 
@@ -887,6 +887,17 @@ def makeMove(currentState, currentRemark, timelimit=10):
     TIME_LIMIT = timelimit
     START_TIME = time.perf_counter()
     bestMove = None
+
+    # worry: more plys than possible
+    totalPieces = getPiece(currentState)
+    if totalPieces > 24:
+        MAX_PLY = 3
+    elif 16 < totalPieces <= 24:
+        MAX_PLY = 4
+    elif 8 < totalPieces <= 16:
+        MAX_PLY = 5
+    elif totalPieces <= 8:
+        MAX_PLY = 6
    #s = parameterized_minimax(currentState, ply=MAX_PLY, alphaBeta=False, useBasicStaticEval=False)
     for ply in range(1, MAX_PLY):
         s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=True)
@@ -926,6 +937,15 @@ def makeMove(currentState, currentRemark, timelimit=10):
     newRemark = BASIC_REMARKS[count % 10]
     count = count + 1
     return [bestMove, newRemark]
+
+def getPiece(state):
+    pieces = 0
+    for row in state:
+        for col in row:
+            if state.board[row][col] != 0:
+                pieces = pieces + 1
+    return pieces
+
 
 def translate_move_coord(move):
     fr = ''
