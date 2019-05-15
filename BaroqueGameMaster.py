@@ -28,7 +28,7 @@ else:
 
 import BC_state_etc as BC
 
-VALIDATE_MOVES = False # If players are trusted not to cheat, this could be turned off to save time.
+VALIDATE_MOVES = True # If players are trusted not to cheat, this could be turned off to save time.
 
 from winTester import winTester
 

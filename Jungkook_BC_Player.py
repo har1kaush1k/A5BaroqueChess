@@ -158,13 +158,111 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                         tempMax = ev
                 tempEv = tempMax
             finalState = tempState
-    # print(finalState is successors[0])
-    # print("final---")
-    # print(tempEv)
     return finalState, tempEv
             
 def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing):
-    pass
+    global N_STATIC_EVALS, N_STATES_EXPANDED, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, START_TIME
+
+    successors = generate_successors(currentState[1])
+    if(useBasicStaticEval):
+        successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
+    
+
+    currPly = ply - 1
+    finalState = successors[0]
+    tempEv = 0
+    whose = currentState[1].whose_move
+    while time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
+        if currPly == 0 or ply == 0:
+            #print('currPly:' + str(currPly))
+            tempState = None
+            if whose == 1:
+                tempMin = -10000
+                for s in successors:
+                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                    if useBasicStaticEval:
+                        ev = basicStaticEval(s[1])
+                    else:
+                        ev = staticEval(s[1])
+                        #print(ev)
+                    N_STATIC_EVALS = N_STATIC_EVALS + 1
+                    # print("ev: " + str(ev) + " min: " + str(tempMin))
+                    if not useBasicStaticEval and ev >= tempMin:
+                        tempState = s
+                        tempMin = ev
+                    elif useBasicStaticEval and ev > tempMin:
+                        tempState = s
+                        tempMin = ev
+                    alpha = max(alpha, tempMin)
+                    if beta <= alpha:
+                        break
+                tempEv = tempMin
+                # print("final ev: " + str(tempMin))
+            else:
+                tempMax = 10000
+                for s in successors:
+                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                    if useBasicStaticEval:
+                        ev = basicStaticEval(s[1])
+                    else:
+                        ev = staticEval(s[1])
+                        # print(ev)
+                    #print(ev)
+                    N_STATIC_EVALS = N_STATIC_EVALS + 1
+                    if not useBasicStaticEval and ev <= tempMax:
+                        tempState = s
+                        tempMax = ev
+                    elif useBasicStaticEval and ev < tempMax:
+                        tempState = s
+                        tempMax = ev
+                    beta = min(beta, tempMax)
+                    if beta <= alpha:
+                        break
+                    # print(ev)
+                tempEv = tempMax
+            finalState = tempState
+            return tempState, tempEv
+        else:
+            tempState = None
+            if whose == 1:
+                tempMin = -10000
+                for s in successors:
+                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                    t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
+                    # print("STOP")
+                    # print(ev)
+                    # exit(1)
+                    if not useBasicStaticEval and ev >= tempMin:
+                        tempState = s
+                        tempMin = ev
+                    elif useBasicStaticEval and ev > tempMin:
+                        tempState = s
+                        tempMin = ev
+                    alpha = max(alpha, tempMin)
+                    if beta <= alpha:
+                        break
+                tempEv = tempMin
+            else:
+                tempMax = 10000
+                for s in successors:
+                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                    t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
+                    # print("STOP")
+                    # print("hello: " + str(ev))
+                    #exit(1)
+                    #print(ev)
+                    if not useBasicStaticEval and ev <= tempMax:
+                        tempState = s
+                        tempMax = ev
+                    elif useBasicStaticEval and ev < tempMax:
+                        tempState = s
+                        tempMax = ev
+                    beta = min(beta, tempMax)
+                    if beta <= alpha:
+                        break
+                tempEv = tempMax
+            finalState = tempState
+    return finalState, tempEv
 
 # def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing):
 #    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
@@ -574,14 +672,35 @@ def move_like_queen(state, row, col):
 
 def is_frozen(state, row, col):
     piece = state.board[row][col]
-    for i in range(-1, 2):
-        for j in range(-1, 2):
-            if (i != 0 and j != 0) and is_valid(row + i, col + j):
-                b = state.board
-                if b[row + i][col + j] == 15 or b[row + i][col + j] == 14:
-                    if who(b[row + i][col + j]) != who(piece):
-                        return True
-    return False
+    frozen = False
+    b = state.board
+    # for i in range(-1, 2):
+    #     for j in range(-1, 2):
+    #         if (i != 0 and j != 0) and is_valid(row + i, col + j):
+    #             b = state.board
+    #             if b[row + i][col + j] == 15 or b[row + i][col + j] == 14:
+    #                 if who(b[row + i][col + j]) != who(piece) and piece != 0:
+    #                     frozen = True
+
+    if is_valid(row + 1, col) and (b[row + 1][col] == 14 or b[row + 1][col] == 15) and who(b[row + 1][col]) != who(piece) and piece != 0:\
+        frozen = True
+    if is_valid(row + 1, col - 1) and (b[row + 1][col - 1] == 14 or b[row + 1][col - 1] == 15) and who(b[row + 1][col - 1]) != who(piece) and piece != 0:\
+        frozen = True
+    if is_valid(row, col - 1) and (b[row][col - 1] == 14 or b[row][col - 1] == 15) and who(b[row][col - 1]) != who(piece) and piece != 0:\
+        frozen = True
+    if is_valid(row - 1, col - 1) and (b[row - 1][col - 1] == 14 or b[row - 1][col - 1] == 15) and who(b[row - 1][col - 1]) != who(piece) and piece != 0:\
+        frozen = True
+    if is_valid(row - 1, col) and (b[row - 1][col] == 14 or b[row - 1][col] == 15) and who(b[row - 1][col]) != who(piece) and piece != 0:\
+        frozen = True
+    if is_valid(row - 1, col + 1) and (b[row - 1][col + 1] == 14 or b[row - 1][col + 1] == 15) and who(b[row - 1][col + 1]) != who(piece) and piece != 0:\
+        frozen = True
+    if is_valid(row, col + 1) and (b[row][col + 1] == 14 or b[row][col + 1] == 15) and who(b[row][col + 1]) != who(piece) and piece != 0:\
+        frozen = True
+    if is_valid(row + 1, col + 1) and (b[row + 1][col + 1] == 14 or b[row + 1][col + 1] == 15) and who(b[row + 1][col + 1]) != who(piece) and piece != 0:\
+        frozen = True
+    
+    
+    return frozen
 
 
 def find_kings(state):
@@ -853,7 +972,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
                 if staticEval(bestMove[1]) < staticEval(chosenState[1]):
                     bestMove = chosenState
     #     print(ply)
-    #     print(s)
+    print(s)
     # Construct a representation of the move that goes from the
     # currentState to the newState.
     # Here is a placeholder in the right format but with made-up
@@ -882,12 +1001,11 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
 def getPiece(state):
     pieces = 0
-    for row in state:
-        for col in row:
+    for row in range(8):
+        for col in range(8):
             if state.board[row][col] != 0:
                 pieces = pieces + 1
     return pieces
-
 
 def translate_move_coord(move):
     fr = ''
