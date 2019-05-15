@@ -39,6 +39,15 @@ middle_vals = [[2, 2, 2, 2, 2, 2, 2, 2],
              [3, 3, 3, 3, 3, 3, 3, 3],
              [2, 2, 2, 2, 2, 2, 2, 2]]
 
+piece_advance = [[0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0],
+             [1, 1, 1, 1, 1, 1, 1, 1],
+             [2, 2, 2, 2, 2, 2, 2, 2],
+             [3, 3, 3, 3, 3, 3, 3, 3],
+             [3, 3, 3, 3, 3, 3, 3, 3],
+             [4, 4, 4, 4, 4, 4, 4, 4],
+             [4, 4, 4, 4, 4, 4, 4, 4]]
+
 def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
