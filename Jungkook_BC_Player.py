@@ -67,82 +67,20 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
     return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED,
             "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
 
-
-# def minimaxHelper(currentState, ply, startTime, bestState, useBasicStaticEval=True, useZobristHashing=False):
-#     global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState
-#     # print(currentState)
-#     # print(currentState.whose_move)
-#     tempState = bestState
-#     while time.perf_counter() - startTime < TIME_LIMIT - float(0.5):
-#         if ply == 0:
-#             N_STATIC_EVALS = N_STATIC_EVALS + 1
-#             if useBasicStaticEval:
-#                 ev = basicStaticEval(currentState[1])
-#             else:
-#                 ev = staticEval(currentState[1])
-#             return ev
-#         if ply % 2 == MAX_PLY % 2:
-#             provisional = -100000
-#         else:
-#             provisional = 100000
-
-#         successors = generate_successors(currentState[1])
-#         #print(successors)
-#         # print("ply: " + str(ply) + " turn: " + str(currentState.whose_move))
-#         # print(currentState)
-#         if(useBasicStaticEval):
-#             successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
-        
-
-#         for s in successors:
-#             N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-
-#             if useBasicStaticEval:
-#                 tempEval = basicStaticEval(tempState[1])
-#             else:
-#                 tempEval = staticEval(tempState[1])
-
-#             if ply == MAX_PLY-1 and tempState[1] != INITIAL:
-#                 tempEval = -10000
-
-#             if useBasicStaticEval:
-#                 ev = basicStaticEval(s[1])
-#                 if ply == MAX_PLY - 1 and s[1].whose_move == WHITE and \
-#                         ev > tempEval \
-#                         or s[1].whose_move == BLACK and \
-#                         ev < abs(tempEval):
-#                     tempState = s
-#             else:
-#                 ev = staticEval(s[1])
-#                 if ply == MAX_PLY - 1 and s[1].whose_move == WHITE and \
-#                         ev > tempEval \
-#                         or s[1].whose_move == BLACK and \
-#                         ev < abs(tempEval):
-#                     tempState = s
-
-
-#             newVal = minimaxHelper(s, ply - 1, startTime, tempState)
-
-
-#             if ply % 2 == MAX_PLY % 2 and newVal > provisional or ply % 2 != MAX_PLY % 2 and newVal < provisional:
-#                 provisional = newVal
-#                 chosenState = tempState
-
-#         return provisional
-#     return -100000
-
 def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=False):
     global N_STATIC_EVALS, N_STATES_EXPANDED, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, START_TIME
 
     successors = generate_successors(currentState[1])
     if(useBasicStaticEval):
         successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
+    
+
     currPly = ply - 1
     finalState = successors[0]
     tempEv = 0
     whose = currentState[1].whose_move
     while time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
-        if currPly == 0:
+        if currPly == 0 or ply == 0:
             #print('currPly:' + str(currPly))
             tempState = None
             if whose == 1:
@@ -156,10 +94,12 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                         #print(ev)
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
                     # print("ev: " + str(ev) + " min: " + str(tempMin))
-                    if ev > tempMin:
+                    if not useBasicStaticEval and ev >= tempMin:
                         tempState = s
                         tempMin = ev
-                        #print(tempState)
+                    elif useBasicStaticEval and ev > tempMin:
+                        tempState = s
+                        tempMin = ev
                     # print(ev)
                 tempEv = tempMin
                 # print("final ev: " + str(tempMin))
@@ -174,9 +114,12 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                         # print(ev)
                     #print(ev)
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if ev < tempMax:
+                    if not useBasicStaticEval and ev <= tempMax:
                         tempState = s
                         tempMax = ev
+                    elif useBasicStaticEval and ev < tempMin:
+                        tempState = s
+                        tempMin = ev
                     # print(ev)
                 tempEv = tempMax
             finalState = tempState
@@ -191,7 +134,10 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                     # print("STOP")
                     # print(ev)
                     # exit(1)
-                    if ev > tempMin:
+                    if not useBasicStaticEval and ev >= tempMin:
+                        tempState = s
+                        tempMin = ev
+                    elif useBasicStaticEval and ev > tempMin:
                         tempState = s
                         tempMin = ev
                 tempEv = tempMin
@@ -204,18 +150,14 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                     # print("hello: " + str(ev))
                     #exit(1)
                     #print(ev)
-                    if ev < tempMax:
+                    if not useBasicStaticEval and ev <= tempMax:
+                        tempState = s
+                        tempMax = ev
+                    elif useBasicStaticEval and ev < tempMax:
                         tempState = s
                         tempMax = ev
                 tempEv = tempMax
-        
-        # if tempState == None:
-        #     print("ply: " + str(currPly))
-        # if tempState != None:
-        #     return tempState, ev
             finalState = tempState
-        # if ply == MAX_PLY-1:
-        #     print("ply = " + str(ply))
     # print(finalState is successors[0])
     # print("final---")
     # print(tempEv)
@@ -889,7 +831,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
     bestMove = None
    #s = parameterized_minimax(currentState, ply=MAX_PLY, alphaBeta=False, useBasicStaticEval=False)
     for ply in range(1, MAX_PLY):
-        s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=True)
+        s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=False)
         if bestMove == None:
             bestMove = chosenState
         else:
