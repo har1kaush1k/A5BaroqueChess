@@ -16,6 +16,7 @@ N_STATIC_EVALS = 0
 N_CUTOFFS = 0
 TIME_LIMIT = 0
 START_TIME = 0
+INCOMPLETE = False
 count = 0
 chosenState = None
 
@@ -64,94 +65,68 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
         chosenState, provisional = pruned_minimaxHelper([[(0, 0), (0, 0)],currentState], alpha, beta, ply, useBasicStaticEval, useZobristHashing)
     else:
         chosenState, provisional = minimaxHelper([[(0, 0), (0, 0)], currentState], ply, useBasicStaticEval, useZobristHashing)
-
     return {"CURRENT_STATE_STATIC_VAL": provisional, "N_STATES_EXPANDED": N_STATES_EXPANDED,
             "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
 
+
 def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=False):
-    global N_STATIC_EVALS, N_STATES_EXPANDED, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, START_TIME
+    global N_STATIC_EVALS, N_STATES_EXPANDED, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, START_TIME, INCOMPLETE
+
+    whose = currentState[1].whose_move
 
     successors = generate_successors(currentState[1])
-    if(useBasicStaticEval):
+    if len(successors) > 0:
+        temp_state = successors[0]
         successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
-    
-    currPly = ply - 1
-    finalState = successors[0]
-    tempEv = 0
-    whose = currentState[1].whose_move
-    while time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
-        if currPly == 0 or ply == 0:
-            tempState = None
-            if whose == 1:
-                tempMin = -10000
-                for s in successors:
-                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-                    if useBasicStaticEval:
-                        ev = basicStaticEval(s[1])
-                    else:
-                        ev = staticEval(s[1])
-                    N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if not useBasicStaticEval and ev > tempMin:
-                        tempState = s
-                        tempMin = ev
-                    elif useBasicStaticEval and ev > tempMin:
-                        tempState = s
-                        tempMin = ev
-                tempEv = tempMin
+    else:
+        temp_state = currentState
+
+    if useBasicStaticEval:
+        temp = basicStaticEval(temp_state[1])
+    else:
+        temp = staticEval(temp_state[1])
+
+    if time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
+        if ply == 0:
+            if useBasicStaticEval:
+                ev = basicStaticEval(currentState[1])
             else:
-                tempMax = 10000
-                for s in successors:
-                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-                    if useBasicStaticEval:
-                        ev = basicStaticEval(s[1])
-                    else:
-                        ev = staticEval(s[1])
-                    N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if not useBasicStaticEval and ev < tempMax:
-                        tempState = s
-                        tempMax = ev
-                    elif useBasicStaticEval and ev < tempMin:
-                        tempState = s
-                        tempMin = ev
-                tempEv = tempMax
-            finalState = tempState
-            return tempState, tempEv
+                ev = staticEval(currentState[1])
+            # print("ply: " + str(ply))
+            # print("team: " + str(whose) + " ev: " + str(ev))
+            return currentState, ev
         else:
-            tempState = None
             if whose == 1:
-                tempMin = -10000
-                for s in successors:
-                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-                    t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    if not useBasicStaticEval and ev > tempMin:
-                        tempState = s
-                        tempMin = ev
-                    elif useBasicStaticEval and ev > tempMin:
-                        tempState = s
-                        tempMin = ev
-                tempEv = tempMin
+                temp = -100000
             else:
-                tempMax = 10000
-                for s in successors:
-                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-                    t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    if not useBasicStaticEval and ev < tempMax:
-                        tempState = s
-                        tempMax = ev
-                    elif useBasicStaticEval and ev < tempMax:
-                        tempState = s
-                        tempMax = ev
-                tempEv = tempMax
-            finalState = tempState
-    return finalState, tempEv
-            
+                temp = 100000
+
+            for s in successors:
+                if time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
+                    state, value = minimaxHelper(s, ply - 1, useBasicStaticEval)
+                    if whose == 1:
+                        if value > temp:
+                            temp = value
+                            temp_state = s
+                    else:
+                        if value < temp:
+                            temp = value
+                            temp_state = s
+                    # print("ply: " + str(ply))
+                    # print("team: " + str(whose) + " temp: " + str(temp) + " value: " + str(value))
+
+        return temp_state, temp
+    INCOMPLETE = True
+    return temp_state, temp
+
+
 def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing):
     global N_STATIC_EVALS, N_STATES_EXPANDED, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, START_TIME
 
     successors = generate_successors(currentState[1])
     if(useBasicStaticEval):
         successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
-    
+
 
     currPly = ply - 1
     finalState = successors[0]
@@ -606,8 +581,8 @@ def is_frozen(state, row, col):
     if is_valid(row + 1, col + 1) and (b[row + 1][col + 1] == 14 or b[row + 1][col + 1] == 15 or ((b[row + 1][col + 1] == 8 or b[row + 1][col + 1] == 9) and \
             (piece == 14 or piece == 15))) and who(b[row + 1][col + 1]) != who(piece) and piece != 0:\
         frozen = True
-    
-    
+
+
     return frozen
 
 
@@ -804,7 +779,8 @@ def pincer_capture(newState, row, col):
 def makeMove(currentState, currentRemark, timelimit=10):
     # Compute the new state for a move.
     # You should implement an anytime algorithm based on IDDFS.
-    global count, chosenState, BASIC_REMARKS, MAX_PLY
+    global count, chosenState, BASIC_REMARKS, MAX_PLY, INCOMPLETE
+    INCOMPLETE = False
     # The following is a placeholder that just copies the current state.
     newState = BC_state(currentState.board)
 
@@ -816,7 +792,6 @@ def makeMove(currentState, currentRemark, timelimit=10):
     START_TIME = time.perf_counter()
     bestMove = None
 
-    # worry: more plys than possible
     totalPieces = getPiece(currentState)
     if totalPieces > 24:
         MAX_PLY = 3
@@ -826,18 +801,11 @@ def makeMove(currentState, currentRemark, timelimit=10):
         MAX_PLY = 5
     elif totalPieces <= 8:
         MAX_PLY = 6
-   #s = parameterized_minimax(currentState, ply=MAX_PLY, alphaBeta=False, useBasicStaticEval=False)
+
     for ply in range(1, MAX_PLY):
         s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=False)
-        if bestMove == None:
+        if not INCOMPLETE:
             bestMove = chosenState
-        else:
-            if currentState.whose_move == WHITE:
-                if staticEval(bestMove[1]) > staticEval(chosenState[1]):
-                    bestMove = chosenState
-            else:
-                if staticEval(bestMove[1]) < staticEval(chosenState[1]):
-                    bestMove = chosenState
 
     if count == 12:
         newRemark = "I make my move, " + str(bestMove[0]) + ". Nice, yeah?"
@@ -852,9 +820,10 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
 def getPiece(state):
     pieces = 0
+    team = state.whose_move
     for row in range(8):
         for col in range(8):
-            if state.board[row][col] != 0:
+            if state.board[row][col] != 0 and who(state.board[row][col]) == team:
                 pieces = pieces + 1
     return pieces
 
@@ -904,7 +873,7 @@ def prepare(player2Nickname):
                     "I'm on a very busy schedule. Can you do any better?",
                     "Wow, do you know what would make this game better? Listening to my new album.",
                     "Sorry, I'm just too good. Catch me at the Grammys.",
-                    "Can you make this more interesting? I'm getting bored.", 
+                    "Can you make this more interesting? I'm getting bored.",
                     "I have a concert to play at... Can we speed this up, " + OPONENT_NAME + "??",
                     "I have a lot of fans waiting for me. I need to finish this quickly.",
                     "Yo, listen to this bop, Boy with Luv. It'll make the game more fun."]
@@ -964,7 +933,7 @@ def staticEval(state):
                 score -= (2 * edge_vals[row][col])
             elif piece == WHITE_KING:
                 score += (2 * edge_vals[row][col])
-            
+
             if (who(piece) == whose and row != king_locs[0] and col != king_locs[1]) or \
                     (who(piece) != whose and row != king_locs[2] and col != king_locs[3]):
                 if piece == BLACK_COORDINATOR:
@@ -991,7 +960,7 @@ def staticEval(state):
                                 if abs(piece_vals.get(b[temp_row][temp_col])) > abs(reduction):
                                     reduction = piece_vals.get(b[temp_row][temp_col])
                 score += reduction / 10
-            
+
             if piece == BLACK_PINCER or piece == WHITE_PINCER: # pincer
                 for i in range(-2, 3, 4):
                     if 0 <= row + i < 8:
@@ -1002,18 +971,18 @@ def staticEval(state):
                         col_temp = b[row][col + i]
                         if col_temp == piece:
                             score += piece_vals.get(col_temp) / 4
-                
+
                 if piece == BLACK_PINCER:
                     if who(piece) == whose:
                         score -= (8 - (abs(row - king_locs[0]) + abs(col - king_locs[1])))
                     elif who(piece) != whose:
                         score -= (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
                     score -= middle_vals[row][col]
-                if piece == WHITE_PINCER: 
+                if piece == WHITE_PINCER:
                     if who(piece) == whose:
                         score += (8 - (abs(row - king_locs[0]) + abs(col - king_locs[1])))
                     elif who(piece) != whose:
                         score += (8 - (abs(row - king_locs[2]) + abs(col - king_locs[3])))
                     score += middle_vals[row][col]
-                        
+
     return score
