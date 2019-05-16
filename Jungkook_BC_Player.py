@@ -72,6 +72,9 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
             "N_STATIC_EVALS": N_STATIC_EVALS, "N_CUTOFFS": N_CUTOFFS}
 
 
+'''
+Recursive function that performs minimax search.
+'''
 def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=False):
     global N_STATIC_EVALS, N_STATES_EXPANDED, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, START_TIME, INCOMPLETE
 
@@ -124,7 +127,9 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
     INCOMPLETE = True
     return temp_state, temp
 
-
+'''
+Performs minimax with parameters for alpha beta pruning.
+'''
 def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing = False):
     global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, \
         START_TIME, INCOMPLETE
@@ -179,7 +184,9 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
     INCOMPLETE = True
     return temp_state, temp
 
-
+'''
+Generates possible successors of any state.
+'''
 def generate_successors(state):
     successors = []
     new_s = []
@@ -198,13 +205,17 @@ def generate_successors(state):
         new_s = new_s + [[s[0], BC_state(s[1].board, new_turn)]]
     return new_s
 
-
+'''
+Checks if a given row and column combination is a valid board position.
+'''
 def is_valid(row, col):
     if 0 <= row < 8 and 0 <= col < 8:
         return True
     return False
 
-
+'''
+Generates moves for all pieces that move like a queen in chess.
+'''
 def move_like_queen(state, row, col):
     piece = state.board[row][col]
     kings = find_kings(state)
@@ -742,7 +753,9 @@ def move_like_queen(state, row, col):
             checking = False
     return successors
 
-
+'''
+Checks if the piece at a certain row and column position is frozen.
+'''
 def is_frozen(state, row, col):
     piece = state.board[row][col]
     frozen = False
@@ -776,7 +789,9 @@ def is_frozen(state, row, col):
 
     return frozen
 
-
+'''
+Finds the coordinates of both kings and returns them as an array.
+'''
 def find_kings(state):
     board = state.board
     locs = [-1, -1, -1, -1]
@@ -943,7 +958,9 @@ def move_pincer(currentState, row, col):
     # return all possible states for the board
     return possibleStates
 
-
+'''
+Performs a capture by a pincer piece.
+'''
 def pincer_capture(newState, row, col):
     updatedBoard = BC_state(newState.board)
     for i in range (-1, 2):
@@ -966,7 +983,9 @@ def pincer_capture(newState, row, col):
     # or new board with all the captured pieces removed
     return updatedBoard
 
-
+'''
+Returns the best move selected.
+'''
 def makeMove(currentState, currentRemark, timelimit=10):
     # Compute the new state for a move.
     # You should implement an anytime algorithm based on IDDFS.
@@ -1018,7 +1037,9 @@ def getPiece(state):
                 pieces = pieces + 1
     return pieces
 
-
+'''
+Generates the letter-number notation given numeric coordinates.
+'''
 def translate_move_coord(move):
     fr = ''
     to = ''
