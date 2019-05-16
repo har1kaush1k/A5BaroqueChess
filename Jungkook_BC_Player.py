@@ -83,15 +83,19 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
 
     if useBasicStaticEval:
         temp = basicStaticEval(temp_state[1])
+        N_STATIC_EVALS += 1
     else:
         temp = staticEval(temp_state[1])
+        N_STATIC_EVALS += 1
 
     if time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
         if ply == 0:
             if useBasicStaticEval:
                 ev = basicStaticEval(currentState[1])
+                N_STATIC_EVALS += 1
             else:
                 ev = staticEval(currentState[1])
+                N_STATIC_EVALS += 1
             # print("ply: " + str(ply))
             # print("team: " + str(whose) + " ev: " + str(ev))
             return currentState, ev
@@ -102,6 +106,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                 temp = 100000
 
             for s in successors:
+                N_STATES_EXPANDED += 1
                 if time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
                     state, value = minimaxHelper(s, ply - 1, useBasicStaticEval)
                     if whose == 1:
