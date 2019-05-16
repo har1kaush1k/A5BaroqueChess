@@ -1,5 +1,8 @@
 '''Jungkook_BC_Player.py
-The beginnings of an agent that might someday play Baroque Chess.
+Hari Kaushik and Lisa Qing
+
+Baroque Chess playing agent that uses minimax search to generate ideal moves
+within the rules of Baroque chess. Adheres to specified time limit per move.
 
 '''
 
