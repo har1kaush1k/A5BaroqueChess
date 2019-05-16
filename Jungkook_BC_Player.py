@@ -83,21 +83,18 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
 
     if useBasicStaticEval:
         temp = basicStaticEval(temp_state[1])
-        N_STATIC_EVALS += 1
+        N_STATIC_EVALS = N_STATIC_EVALS + 1
     else:
         temp = staticEval(temp_state[1])
-        N_STATIC_EVALS += 1
+        N_STATIC_EVALS = N_STATIC_EVALS + 1
 
     if time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
         if ply == 0:
             if useBasicStaticEval:
                 ev = basicStaticEval(currentState[1])
-                N_STATIC_EVALS += 1
             else:
                 ev = staticEval(currentState[1])
-                N_STATIC_EVALS += 1
-            # print("ply: " + str(ply))
-            # print("team: " + str(whose) + " ev: " + str(ev))
+            N_STATIC_EVALS = N_STATIC_EVALS + 1
             return currentState, ev
         else:
             if whose == 1:
@@ -106,7 +103,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                 temp = 100000
 
             for s in successors:
-                N_STATES_EXPANDED += 1
+                N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                 if time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
                     state, value = minimaxHelper(s, ply - 1, useBasicStaticEval)
                     if whose == 1:
@@ -125,95 +122,59 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
     return temp_state, temp
 
 
-def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing):
-    global N_STATIC_EVALS, N_STATES_EXPANDED, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, START_TIME
+def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, useZobristHashing = False):
+    global N_STATIC_EVALS, N_STATES_EXPANDED, N_CUTOFFS, CURRENT_STATE_STATIC_VAL, MAX_PLY, chosenState, \
+        START_TIME, INCOMPLETE
+
+    whose = currentState[1].whose_move
 
     successors = generate_successors(currentState[1])
-    if(useBasicStaticEval):
+    if len(successors) > 0:
+        temp_state = successors[0]
         successors = sorted(successors, key=lambda k: translate_move_coord(k[0]))
+    else:
+        temp_state = currentState
 
+    if useBasicStaticEval:
+        temp = basicStaticEval(temp_state[1])
+    else:
+        temp = staticEval(temp_state[1])
 
-    currPly = ply - 1
-    finalState = successors[0]
-    tempEv = 0
-    whose = currentState[1].whose_move
-    while time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
-        if currPly == 0 or ply == 0:
-            tempState = None
-            if whose == 1:
-                tempMin = -10000
-                for s in successors:
-                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-                    if useBasicStaticEval:
-                        ev = basicStaticEval(s[1])
-                    else:
-                        ev = staticEval(s[1])
-                    N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if not useBasicStaticEval and ev > tempMin:
-                        tempState = s
-                        tempMin = ev
-                    elif useBasicStaticEval and ev > tempMin:
-                        tempState = s
-                        tempMin = ev
-                    alpha = max(alpha, tempMin)
-                    if beta <= alpha:
-                        break
-                tempEv = tempMin
+    if time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
+        if ply == 0:
+            if useBasicStaticEval:
+                ev = basicStaticEval(currentState[1])
             else:
-                tempMax = 10000
-                for s in successors:
-                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-                    if useBasicStaticEval:
-                        ev = basicStaticEval(s[1])
-                    else:
-                        ev = staticEval(s[1])
-                    N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if not useBasicStaticEval and ev < tempMax:
-                        tempState = s
-                        tempMax = ev
-                    elif useBasicStaticEval and ev < tempMax:
-                        tempState = s
-                        tempMax = ev
-                    beta = min(beta, tempMax)
-                    if beta <= alpha:
-                        break
-                tempEv = tempMax
-            finalState = tempState
-            return tempState, tempEv
+                ev = staticEval(currentState[1])
+            N_STATIC_EVALS = N_STATIC_EVALS + 1
+            return currentState, ev
         else:
-            tempState = None
             if whose == 1:
-                tempMin = -10000
-                for s in successors:
-                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-                    t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    if not useBasicStaticEval and ev > tempMin:
-                        tempState = s
-                        tempMin = ev
-                    elif useBasicStaticEval and ev > tempMin:
-                        tempState = s
-                        tempMin = ev
-                    alpha = max(alpha, tempMin)
-                    if beta <= alpha:
-                        break
-                tempEv = tempMin
+                temp = -100000
             else:
-                tempMax = 10000
-                for s in successors:
-                    N_STATES_EXPANDED = N_STATES_EXPANDED + 1
-                    t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    if not useBasicStaticEval and ev < tempMax:
-                        tempState = s
-                        tempMax = ev
-                    elif useBasicStaticEval and ev < tempMax:
-                        tempState = s
-                        tempMax = ev
-                    beta = min(beta, tempMax)
-                    if beta <= alpha:
+                temp = 100000
+
+            for s in successors:
+                N_STATES_EXPANDED = N_STATES_EXPANDED + 1
+                if time.perf_counter() - START_TIME < TIME_LIMIT - float(0.2):
+                    state, value = pruned_minimaxHelper(s, alpha, beta, ply - 1, useBasicStaticEval)
+                    if whose == 1:
+                        if value > temp:
+                            temp = value
+                            temp_state = s
+                            alpha = temp
+                    else:
+                        if value < temp:
+                            temp = value
+                            temp_state = s
+                            beta = temp
+
+                    if beta <= alpha and beta != -100000 and alpha != 100000:
+                        N_CUTOFFS = N_CUTOFFS + 1
                         break
-                tempEv = tempMax
-            finalState = tempState
-    return finalState, tempEv
+        return temp_state, temp
+    INCOMPLETE = True
+    return temp_state, temp
 
 
 def generate_successors(state):
