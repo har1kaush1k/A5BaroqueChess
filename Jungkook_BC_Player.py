@@ -110,7 +110,7 @@ def minimaxHelper(currentState, ply, useBasicStaticEval=True, useZobristHashing=
                     if not useBasicStaticEval and ev < tempMax:
                         tempState = s
                         tempMax = ev
-                    elif useBasicStaticEval and ev < tempMin:
+                    elif useBasicStaticEval and ev < tempMax:
                         tempState = s
                         tempMin = ev
                 tempEv = tempMax
@@ -169,7 +169,7 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                     else:
                         ev = staticEval(s[1])
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if not useBasicStaticEval and ev >= tempMin:
+                    if not useBasicStaticEval and ev > tempMin:
                         tempState = s
                         tempMin = ev
                     elif useBasicStaticEval and ev > tempMin:
@@ -188,7 +188,7 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                     else:
                         ev = staticEval(s[1])
                     N_STATIC_EVALS = N_STATIC_EVALS + 1
-                    if not useBasicStaticEval and ev <= tempMax:
+                    if not useBasicStaticEval and ev < tempMax:
                         tempState = s
                         tempMax = ev
                     elif useBasicStaticEval and ev < tempMax:
@@ -207,7 +207,7 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                 for s in successors:
                     N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                     t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    if not useBasicStaticEval and ev >= tempMin:
+                    if not useBasicStaticEval and ev > tempMin:
                         tempState = s
                         tempMin = ev
                     elif useBasicStaticEval and ev > tempMin:
@@ -222,7 +222,7 @@ def pruned_minimaxHelper(currentState, alpha, beta, ply, useBasicStaticEval, use
                 for s in successors:
                     N_STATES_EXPANDED = N_STATES_EXPANDED + 1
                     t, ev = minimaxHelper(s, currPly, useBasicStaticEval, useZobristHashing)
-                    if not useBasicStaticEval and ev <= tempMax:
+                    if not useBasicStaticEval and ev < tempMax:
                         tempState = s
                         tempMax = ev
                     elif useBasicStaticEval and ev < tempMax:
@@ -275,22 +275,47 @@ def move_like_queen(state, row, col):
     while checking and whose == state.whose_move:
         newState = BC_state(state.board)
         if is_valid(row + move, col) and newState.board[row + move][col] == 0:
-            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row + move][col] = piece
                 newState.board[row][col] = 0
-                if newState.board[king_row][col] != 0 and who(newState.board[king_row][col]) != whose:
-                    newState.board[king_row][col] = 0
-                if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
-                    newState.board[row + move][king_col] = 0
-            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                if piece == WHITE_IMITATOR:
+                    if newState.board[king_row][col] == BLACK_COORDINATOR:
+                        newState.board[king_row][col] = 0
+                    if newState.board[row + move][king_col] == BLACK_COORDINATOR:
+                        newState.board[row + move][king_col] = 0
+                elif piece == BLACK_IMITATOR:
+                    if newState.board[king_row][col] == WHITE_COORDINATOR:
+                        newState.board[king_row][col] = 0
+                    if newState.board[row + move][king_col] == WHITE_COORDINATOR:
+                        newState.board[row + move][king_col] = 0
+                else:
+                    if newState.board[king_row][col] != 0 and who(newState.board[king_row][col]) != whose:
+                        newState.board[king_row][col] = 0
+                    if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
+                        newState.board[row + move][king_col] = 0
+            if piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row + move][col] = piece
                 newState.board[row][col] = 0
-                if is_valid(row-1, col) and newState.board[row - 1][col] != 0 and who(newState.board[row - 1][col]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(row-1, col):
+                    if newState.board[row - 1][col] ==  BLACK_WITHDRAWER:
+                        newState.board[row - 1][col] = 0
+                elif piece == BLACK_IMITATOR and is_valid(row-1, col):
+                    if newState.board[row - 1][col] ==  WHITE_WITHDRAWER:
+                        newState.board[row - 1][col] = 0
+                elif is_valid(row-1, col) and newState.board[row - 1][col] != 0 and who(newState.board[row - 1][col]) != whose:
                     newState.board[row - 1][col] = 0
-            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+            if piece == WHITE_LEAPER or piece == BLACK_LEAPER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 new_row = row + move
                 new_col = col
-                if is_valid(new_row + 1, new_col) and newState.board[new_row + 1][new_col] != 0 and who(newState.board[new_row + 1][new_col]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(new_row + 1, new_col):
+                    if newState.board[new_row + 1][new_col] == BLACK_LEAPER and is_valid(new_row + 2, new_col) and newState.board[new_row + 2][new_col] == 0:
+                        newState.board[new_row + 1][new_col] = 0
+                        new_row += 2
+                elif piece == BLACK_IMITATOR and is_valid(new_row + 1, new_col):
+                    if newState.board[new_row + 1][new_col] == WHITE_LEAPER and is_valid(new_row + 2, new_col) and newState.board[new_row + 2][new_col] == 0:
+                        newState.board[new_row + 1][new_col] = 0
+                        new_row += 2
+                elif is_valid(new_row + 1, new_col) and newState.board[new_row + 1][new_col] != 0 and who(newState.board[new_row + 1][new_col]) != whose:
                     if is_valid(new_row + 2, new_col) and newState.board[new_row + 2][new_col] == 0:
                         newState.board[new_row + 1][new_col] = 0
                         new_row += 2
@@ -312,22 +337,51 @@ def move_like_queen(state, row, col):
     while checking:
         newState = BC_state(state.board)
         if is_valid(row + move, col - move) and newState.board[row + move][col - move] == 0:
-            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row + move][col - move] = piece
                 newState.board[row][col] = 0
-                if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
-                    newState.board[king_row][col - move] = 0
-                if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
-                    newState.board[row + move][king_col] = 0
-            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                if piece == WHITE_IMITATOR:
+                    if newState.board[king_row][col - move] == BLACK_COORDINATOR:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row + move][king_col] == BLACK_COORDINATOR:
+                        newState.board[row + move][king_col] = 0
+                elif piece == BLACK_IMITATOR:
+                    if newState.board[king_row][col - move] == WHITE_COORDINATOR:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row + move][king_col] == WHITE_COORDINATOR:
+                        newState.board[row + move][king_col] = 0
+                else:
+                    if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
+                        newState.board[row + move][king_col] = 0
+            if piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row + move][col - move] = piece
                 newState.board[row][col] = 0
-                if is_valid(row - 1, col + 1) and newState.board[row - 1][col + 1] != 0 and who(newState.board[row - 1][col + 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(row-1, col+1):
+                    if newState.board[row - 1][col + 1] ==  BLACK_WITHDRAWER:
+                        newState.board[row - 1][col + 1] = 0
+                elif piece == BLACK_IMITATOR and is_valid(row-1, col+1):
+                    if newState.board[row - 1][col + 1] ==  WHITE_WITHDRAWER:
+                        newState.board[row - 1][col + 1] = 0
+                elif is_valid(row - 1, col + 1) and newState.board[row - 1][col + 1] != 0 and who(newState.board[row - 1][col + 1]) != whose:
                     newState.board[row - 1][col + 1] = 0
-            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+            if piece == WHITE_LEAPER or piece == BLACK_LEAPER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 new_row = row + move
                 new_col = col - move
-                if is_valid(new_row + 1, new_col - 1) and newState.board[new_row + 1][new_col - 1] != 0 and who(newState.board[new_row + 1][new_col - 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(new_row + 1, new_col - 1):
+                    if newState.board[new_row + 1][new_col - 1] == BLACK_LEAPER and is_valid(new_row + 2, new_col - 2) and \
+                            newState.board[new_row + 2][new_col - 2] == 0:
+                        newState.board[new_row + 1][new_col - 1] = 0
+                        new_row += 2
+                        new_col -= 2
+                elif piece == BLACK_IMITATOR and is_valid(new_row + 1, new_col - 1):
+                    if newState.board[new_row + 1][new_col - 1] == WHITE_LEAPER and is_valid(new_row + 2, new_col - 2) and \
+                            newState.board[new_row + 2][new_col - 2] == 0:
+                        newState.board[new_row + 1][new_col - 1] = 0
+                        new_row += 2
+                        new_col -= 2
+                elif is_valid(new_row + 1, new_col - 1) and newState.board[new_row + 1][new_col - 1] != 0 and who(newState.board[new_row + 1][new_col - 1]) != whose:
                     if is_valid(new_row + 2, new_col - 2) and newState.board[new_row + 2][new_col - 2] == 0:
                         newState.board[new_row + 1][new_col - 1] = 0
                         new_row += 2
@@ -351,22 +405,49 @@ def move_like_queen(state, row, col):
     while checking:
         newState = BC_state(state.board)
         if is_valid(row, col - move) and newState.board[row][col - move] == 0:
-            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row][col - move] = piece
                 newState.board[row][col] = 0
-                if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
-                    newState.board[king_row][col - move] = 0
-                if newState.board[row][king_col] != 0 and who(newState.board[row][king_col]) != whose:
-                    newState.board[row][king_col] = 0
-            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                if piece == WHITE_IMITATOR:
+                    if newState.board[king_row][col - move] == BLACK_COORDINATOR:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row][king_col] == BLACK_COORDINATOR:
+                        newState.board[row][king_col] = 0
+                elif piece == BLACK_IMITATOR:
+                    if newState.board[king_row][col - move] == WHITE_COORDINATOR:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row][king_col] == WHITE_COORDINATOR:
+                        newState.board[row][king_col] = 0
+                else:
+                    if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row][king_col] != 0 and who(newState.board[row][king_col]) != whose:
+                        newState.board[row][king_col] = 0
+            if piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row][col - move] = piece
                 newState.board[row][col] = 0
-                if is_valid(row, col + 1) and newState.board[row][col + 1] != 0 and who(newState.board[row][col + 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(row, col+1):
+                    if newState.board[row][col + 1] ==  BLACK_WITHDRAWER:
+                        newState.board[row][col + 1] = 0
+                elif piece == BLACK_IMITATOR and is_valid(row, col+1):
+                    if newState.board[row][col + 1] ==  WHITE_WITHDRAWER:
+                        newState.board[row][col + 1] = 0
+                elif is_valid(row, col + 1) and newState.board[row][col + 1] != 0 and who(newState.board[row][col + 1]) != whose:
                     newState.board[row][col + 1] = 0
-            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+            if piece == WHITE_LEAPER or piece == BLACK_LEAPER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 new_row = row
                 new_col = col - move
-                if is_valid(new_row, new_col - 1) and newState.board[new_row][new_col - 1] != 0 and who(newState.board[new_row][new_col - 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(new_row, new_col - 1):
+                    if newState.board[new_row][new_col - 1] == BLACK_LEAPER and is_valid(new_row, new_col - 2) and \
+                            newState.board[new_row][new_col - 2] == 0:
+                        newState.board[new_row][new_col - 1] = 0
+                        new_col -= 2
+                elif piece == BLACK_IMITATOR and is_valid(new_row, new_col - 1):
+                    if newState.board[new_row][new_col - 1] == WHITE_LEAPER and is_valid(new_row, new_col - 2) and \
+                            newState.board[new_row][new_col - 2] == 0:
+                        newState.board[new_row][new_col - 1] = 0
+                        new_col -= 2
+                elif is_valid(new_row, new_col - 1) and newState.board[new_row][new_col - 1] != 0 and who(newState.board[new_row][new_col - 1]) != whose:
                     if is_valid(new_row, new_col - 2) and newState.board[new_row][new_col - 2] == 0:
                         newState.board[new_row][new_col - 1] = 0
                         new_col -= 2
@@ -389,22 +470,51 @@ def move_like_queen(state, row, col):
     while checking:
         newState = BC_state(state.board)
         if is_valid(row - move, col - move) and newState.board[row - move][col - move] == 0:
-            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row - move][col - move] = piece
                 newState.board[row][col] = 0
-                if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
-                    newState.board[king_row][col - move] = 0
-                if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
-                    newState.board[row - move][king_col] = 0
-            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                if piece == WHITE_IMITATOR:
+                    if newState.board[king_row][col - move] == BLACK_COORDINATOR:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row - move][king_col] == BLACK_COORDINATOR:
+                        newState.board[row - move][king_col] = 0
+                elif piece == BLACK_IMITATOR:
+                    if newState.board[king_row][col - move] == WHITE_COORDINATOR:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row - move][king_col] == WHITE_COORDINATOR:
+                        newState.board[row - move][king_col] = 0
+                else:
+                    if newState.board[king_row][col - move] != 0 and who(newState.board[king_row][col - move]) != whose:
+                        newState.board[king_row][col - move] = 0
+                    if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
+                        newState.board[row - move][king_col] = 0
+            if piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row - move][col - move] = piece
                 newState.board[row][col] = 0
-                if is_valid(row + 1, col + 1) and newState.board[row + 1][col + 1] != 0 and who(newState.board[row + 1][col + 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(row + 1, col + 1):
+                    if newState.board[row + 1][col + 1] ==  BLACK_WITHDRAWER:
+                        newState.board[row + 1][col + 1] = 0
+                elif piece == BLACK_IMITATOR and is_valid(row + 1, col + 1):
+                    if newState.board[row + 1][col + 1] ==  WHITE_WITHDRAWER:
+                        newState.board[row + 1][col + 1] = 0
+                elif is_valid(row + 1, col + 1) and newState.board[row + 1][col + 1] != 0 and who(newState.board[row + 1][col + 1]) != whose:
                     newState.board[row + 1][col + 1] = 0
-            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+            if piece == WHITE_LEAPER or piece == BLACK_LEAPER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 new_row = row - move
                 new_col = col - move
-                if is_valid(new_row - 1, new_col - 1) and newState.board[new_row - 1][new_col - 1] != 0 and who(newState.board[new_row - 1][new_col - 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(new_row - 1, new_col - 1):
+                    if newState.board[new_row - 1][new_col - 1] == BLACK_LEAPER and is_valid(new_row - 2, new_col - 2) and \
+                            newState.board[new_row - 2][new_col - 2] == 0:
+                        newState.board[new_row - 1][new_col - 1] = 0
+                        new_col -= 2
+                        new_row -= 2
+                elif piece == BLACK_IMITATOR and is_valid(new_row - 1, new_col - 1):
+                    if newState.board[new_row - 1][new_col - 1] == WHITE_LEAPER and is_valid(new_row - 2, new_col - 2) and \
+                            newState.board[new_row - 2][new_col - 2] == 0:
+                        newState.board[new_row - 1][new_col - 1] = 0
+                        new_col -= 2
+                        new_row -= 2
+                elif is_valid(new_row - 1, new_col - 1) and newState.board[new_row - 1][new_col - 1] != 0 and who(newState.board[new_row - 1][new_col - 1]) != whose:
                     if is_valid(new_row - 2, new_col - 2) and newState.board[new_row - 2][new_col - 2] == 0:
                         newState.board[new_row - 1][new_col - 1] = 0
                         new_col -= 2
@@ -428,22 +538,49 @@ def move_like_queen(state, row, col):
     while checking:
         newState = BC_state(state.board)
         if is_valid(row - move, col) and newState.board[row - move][col] == 0:
-            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row - move][col] = piece
                 newState.board[row][col] = 0
-                if newState.board[king_row][col] != 0 and who(newState.board[king_row][col]) != whose:
-                    newState.board[king_row][col] = 0
-                if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
-                    newState.board[row - move][king_col] = 0
-            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                if piece == WHITE_IMITATOR:
+                    if newState.board[king_row][col] == BLACK_COORDINATOR:
+                        newState.board[king_row][col] = 0
+                    if newState.board[row - move][king_col] == BLACK_COORDINATOR:
+                        newState.board[row - move][king_col] = 0
+                elif piece == BLACK_IMITATOR:
+                    if newState.board[king_row][col] == WHITE_COORDINATOR:
+                        newState.board[king_row][col] = 0
+                    if newState.board[row - move][king_col] == WHITE_COORDINATOR:
+                        newState.board[row - move][king_col] = 0
+                else:
+                    if newState.board[king_row][col] != 0 and who(newState.board[king_row][col]) != whose:
+                        newState.board[king_row][col] = 0
+                    if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
+                        newState.board[row - move][king_col] = 0
+            if piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row - move][col] = piece
                 newState.board[row][col] = 0
-                if is_valid(row + 1, col) and newState.board[row + 1][col] != 0 and who(newState.board[row + 1][col]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(row + 1, col):
+                    if newState.board[row + 1][col] ==  BLACK_WITHDRAWER:
+                        newState.board[row + 1][col] = 0
+                elif piece == BLACK_IMITATOR and is_valid(row + 1, col):
+                    if newState.board[row + 1][col] ==  WHITE_WITHDRAWER:
+                        newState.board[row + 1][col] = 0
+                elif is_valid(row + 1, col) and newState.board[row + 1][col] != 0 and who(newState.board[row + 1][col]) != whose:
                     newState.board[row + 1][col] = 0
-            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+            if piece == WHITE_LEAPER or piece == BLACK_LEAPER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 new_row = row - move
                 new_col = col
-                if is_valid(new_row - 1, new_col) and newState.board[new_row - 1][new_col] != 0 and who(newState.board[new_row - 1][new_col]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(new_row - 1, new_col):
+                    if newState.board[new_row - 1][new_col] == BLACK_LEAPER and is_valid(new_row - 2, new_col) and \
+                            newState.board[new_row - 2][new_col] == 0:
+                        newState.board[new_row - 1][new_col] = 0
+                        new_row -= 2
+                elif piece == BLACK_IMITATOR and is_valid(new_row - 1, new_col):
+                    if newState.board[new_row - 1][new_col] == WHITE_LEAPER and is_valid(new_row - 2, new_col) and \
+                            newState.board[new_row - 2][new_col] == 0:
+                        newState.board[new_row - 1][new_col] = 0
+                        new_row -= 2
+                elif is_valid(new_row - 1, new_col) and newState.board[new_row - 1][new_col] != 0 and who(newState.board[new_row - 1][new_col]) != whose:
                     if is_valid(new_row - 2, new_col) and newState.board[new_row - 2][new_col] == 0:
                         newState.board[new_row - 1][new_col] = 0
                         new_row -= 2
@@ -467,22 +604,51 @@ def move_like_queen(state, row, col):
     while checking:
         newState = BC_state(state.board)
         if is_valid(row - move, col + move) and newState.board[row - move][col + move] == 0:
-            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row - move][col + move] = piece
                 newState.board[row][col] = 0
-                if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
-                    newState.board[king_row][col + move] = 0
-                if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
-                    newState.board[row - move][king_col] = 0
-            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                if piece == WHITE_IMITATOR:
+                    if newState.board[king_row][col + move] == BLACK_COORDINATOR:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row - move][king_col] == BLACK_COORDINATOR:
+                        newState.board[row - move][king_col] = 0
+                elif piece == BLACK_IMITATOR:
+                    if newState.board[king_row][col + move] == WHITE_COORDINATOR:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row - move][king_col] == WHITE_COORDINATOR:
+                        newState.board[row - move][king_col] = 0
+                else:
+                    if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row - move][king_col] != 0 and who(newState.board[row - move][king_col]) != whose:
+                        newState.board[row - move][king_col] = 0
+            if piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row - move][col + move] = piece
                 newState.board[row][col] = 0
-                if is_valid(row + 1, col - 1) and newState.board[row + 1][col - 1] != 0 and who(newState.board[row + 1][col - 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(row + 1, col - 1):
+                    if newState.board[row + 1][col - 1] ==  BLACK_WITHDRAWER:
+                        newState.board[row + 1][col - 1] = 0
+                elif piece == BLACK_IMITATOR and is_valid(row + 1, col - 1):
+                    if newState.board[row + 1][col - 1] ==  WHITE_WITHDRAWER:
+                        newState.board[row + 1][col - 1] = 0
+                elif is_valid(row + 1, col - 1) and newState.board[row + 1][col - 1] != 0 and who(newState.board[row + 1][col - 1]) != whose:
                     newState.board[row + 1][col - 1] = 0
-            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+            if piece == WHITE_LEAPER or piece == BLACK_LEAPER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 new_row = row - move
                 new_col = col + move
-                if is_valid(new_row - 1, new_col + 1) and newState.board[new_row - 1][new_col + 1] != 0 and who(newState.board[new_row - 1][new_col + 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(new_row - 1, new_col + 1):
+                    if newState.board[new_row - 1][new_col + 1] == BLACK_LEAPER and is_valid(new_row - 2, new_col + 2) and \
+                            newState.board[new_row - 2][new_col + 2] == 0:
+                        newState.board[new_row - 1][new_col + 1] = 0
+                        new_row -= 2
+                        new_col += 2
+                elif piece == BLACK_IMITATOR and is_valid(new_row - 1, new_col + 1):
+                    if newState.board[new_row - 1][new_col + 1] == WHITE_LEAPER and is_valid(new_row - 2, new_col + 2) and \
+                            newState.board[new_row - 2][new_col + 2] == 0:
+                        newState.board[new_row - 1][new_col + 1] = 0
+                        new_row -= 2
+                        new_col += 2
+                elif is_valid(new_row - 1, new_col + 1) and newState.board[new_row - 1][new_col + 1] != 0 and who(newState.board[new_row - 1][new_col + 1]) != whose:
                     if is_valid(new_row - 2, new_col + 2) and newState.board[new_row - 2][new_col + 2] == 0:
                         newState.board[new_row - 1][new_col + 1] = 0
                         new_row -= 2
@@ -506,22 +672,49 @@ def move_like_queen(state, row, col):
     while checking:
         newState = BC_state(state.board)
         if is_valid(row, col + move) and newState.board[row][col + move] == 0:
-            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row][col + move] = piece
                 newState.board[row][col] = 0
-                if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
-                    newState.board[king_row][col + move] = 0
-                if newState.board[row][king_col] != 0 and who(newState.board[row][king_col]) != whose:
-                    newState.board[row][king_col] = 0
-            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                if piece == WHITE_IMITATOR:
+                    if newState.board[king_row][col + move] == BLACK_COORDINATOR:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row][king_col] == BLACK_COORDINATOR:
+                        newState.board[row][king_col] = 0
+                elif piece == BLACK_IMITATOR:
+                    if newState.board[king_row][col + move] == WHITE_COORDINATOR:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row][king_col] == WHITE_COORDINATOR:
+                        newState.board[row][king_col] = 0
+                else:
+                    if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row][king_col] != 0 and who(newState.board[row][king_col]) != whose:
+                        newState.board[row][king_col] = 0
+            if piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row][col + move] = piece
                 newState.board[row][col] = 0
-                if is_valid(row, col - 1) and newState.board[row][col - 1] != 0 and who(newState.board[row][col - 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(row, col - 1):
+                    if newState.board[row][col - 1] ==  BLACK_WITHDRAWER:
+                        newState.board[row][col - 1] = 0
+                elif piece == BLACK_IMITATOR and is_valid(row, col - 1):
+                    if newState.board[row][col - 1] ==  WHITE_WITHDRAWER:
+                        newState.board[row][col - 1] = 0
+                elif is_valid(row, col - 1) and newState.board[row][col - 1] != 0 and who(newState.board[row][col - 1]) != whose:
                     newState.board[row][col - 1] = 0
-            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+            if piece == WHITE_LEAPER or piece == BLACK_LEAPER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 new_row = row
                 new_col = col + move
-                if is_valid(new_row, new_col + 1) and newState.board[new_row][new_col + 1] != 0 and who(newState.board[new_row][new_col + 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(new_row, new_col + 1):
+                    if newState.board[new_row][new_col + 1] == BLACK_LEAPER and is_valid(new_row, new_col + 2) and \
+                            newState.board[new_row][new_col + 2] == 0:
+                        newState.board[new_row][new_col + 1] = 0
+                        new_col += 2
+                elif piece == BLACK_IMITATOR and is_valid(new_row, new_col + 1):
+                    if newState.board[new_row][new_col + 1] == WHITE_LEAPER and is_valid(new_row, new_col + 2) and \
+                            newState.board[new_row][new_col + 2] == 0:
+                        newState.board[new_row][new_col + 1] = 0
+                        new_col += 2
+                elif is_valid(new_row, new_col + 1) and newState.board[new_row][new_col + 1] != 0 and who(newState.board[new_row][new_col + 1]) != whose:
                     if is_valid(new_row, new_col + 2) and newState.board[new_row][new_col + 2] == 0:
                         newState.board[new_row][new_col + 1] = 0
                         new_col += 2
@@ -543,22 +736,51 @@ def move_like_queen(state, row, col):
     while checking:
         newState = BC_state(state.board)
         if is_valid(row + move, col + move) and newState.board[row + move][col + move] == 0:
-            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR:
+            if piece == WHITE_COORDINATOR or piece == BLACK_COORDINATOR or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row + move][col + move] = piece
                 newState.board[row][col] = 0
-                if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
-                    newState.board[king_row][col + move] = 0
-                if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
-                    newState.board[row + move][king_col] = 0
-            elif piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER:
+                if piece == WHITE_IMITATOR:
+                    if newState.board[king_row][col + move] == BLACK_COORDINATOR:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row + move][king_col] == BLACK_COORDINATOR:
+                        newState.board[row + move][king_col] = 0
+                elif piece == BLACK_IMITATOR:
+                    if newState.board[king_row][col + move] == WHITE_COORDINATOR:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row + move][king_col] == WHITE_COORDINATOR:
+                        newState.board[row + move][king_col] = 0
+                else:
+                    if newState.board[king_row][col + move] != 0 and who(newState.board[king_row][col + move]) != whose:
+                        newState.board[king_row][col + move] = 0
+                    if newState.board[row + move][king_col] != 0 and who(newState.board[row + move][king_col]) != whose:
+                        newState.board[row + move][king_col] = 0
+            if piece == WHITE_WITHDRAWER or piece == BLACK_WITHDRAWER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 newState.board[row + move][col + move] = piece
                 newState.board[row][col] = 0
-                if is_valid(row - 1, col - 1) and newState.board[row - 1][col - 1] != 0 and who(newState.board[row - 1][col - 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(row - 1, col - 1):
+                    if newState.board[row - 1][col - 1] ==  BLACK_WITHDRAWER:
+                        newState.board[row - 1][col - 1] = 0
+                elif piece == BLACK_IMITATOR and is_valid(row - 1, col - 1):
+                    if newState.board[row - 1][col - 1] ==  WHITE_WITHDRAWER:
+                        newState.board[row - 1][col - 1] = 0
+                elif is_valid(row - 1, col - 1) and newState.board[row - 1][col - 1] != 0 and who(newState.board[row - 1][col - 1]) != whose:
                     newState.board[row - 1][col - 1] = 0
-            elif piece == WHITE_LEAPER or piece == BLACK_LEAPER:
+            if piece == WHITE_LEAPER or piece == BLACK_LEAPER or piece == WHITE_IMITATOR or piece == BLACK_IMITATOR:
                 new_row = row + move
                 new_col = col + move
-                if is_valid(new_row + 1, new_col + 1) and newState.board[new_row + 1][new_col + 1] != 0 and who(newState.board[new_row + 1][new_col + 1]) != whose:
+                if piece == WHITE_IMITATOR and is_valid(new_row + 1, new_col + 1):
+                    if newState.board[new_row + 1][new_col + 1] == BLACK_LEAPER and is_valid(new_row + 2, new_col + 2) and \
+                            newState.board[new_row + 2][new_col + 2] == 0:
+                        newState.board[new_row + 1][new_col + 1] = 0
+                        new_row += 2
+                        new_col += 2
+                elif piece == BLACK_IMITATOR and is_valid(new_row + 1, new_col + 1):
+                    if newState.board[new_row + 1][new_col + 1] == WHITE_LEAPER and is_valid(new_row + 2, new_col + 2) and \
+                            newState.board[new_row + 2][new_col + 2] == 0:
+                        newState.board[new_row + 1][new_col + 1] = 0
+                        new_row += 2
+                        new_col += 2
+                elif is_valid(new_row + 1, new_col + 1) and newState.board[new_row + 1][new_col + 1] != 0 and who(newState.board[new_row + 1][new_col + 1]) != whose:
                     if is_valid(new_row + 2, new_col + 2) and newState.board[new_row + 2][new_col + 2] == 0:
                         newState.board[new_row + 1][new_col + 1] = 0
                         new_row += 2
@@ -828,7 +1050,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
         MAX_PLY = 6
    #s = parameterized_minimax(currentState, ply=MAX_PLY, alphaBeta=False, useBasicStaticEval=False)
     for ply in range(1, MAX_PLY):
-        s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=False)
+        s = parameterized_minimax(currentState, ply=ply, alphaBeta=False, useBasicStaticEval=True)
         if bestMove == None:
             bestMove = chosenState
         else:
@@ -838,14 +1060,13 @@ def makeMove(currentState, currentRemark, timelimit=10):
             else:
                 if staticEval(bestMove[1]) < staticEval(chosenState[1]):
                     bestMove = chosenState
-
     if count == 12:
         newRemark = "I make my move, " + str(bestMove[0]) + ". Nice, yeah?"
     elif count == 13:
-        newRemark = "Hm... only " + str(getPiece(bestMove[1]) + " pieces left...")
+        newRemark = "Hm... only " + str(getPiece(bestMove[1])) + " pieces left..."
+        count = -1
     else:
         newRemark = BASIC_REMARKS[count % 12]
-        count = -1
     count = count + 1
     return [bestMove, newRemark]
 
@@ -956,10 +1177,10 @@ def staticEval(state):
         for col in range(8):
             piece = b[row][col]
             score += piece_vals.get(piece) # - (0.25 * middle_vals[row][col] * -1 ** whose)
-            if who(piece) == BLACK and piece != 0:
-                score -= piece_advance[row][col] * 5
-            elif who(piece) == WHITE:
-                score += piece_advance[7-row][col] * 5
+            if who(piece) == BLACK and piece != 0 and piece != BLACK_KING:
+                score -= piece_advance[row][col] * (piece_vals.get(piece) * .5)
+            elif who(piece) == WHITE and piece != WHITE_KING:
+                score += piece_advance[7-row][col] * (piece_vals.get(piece) * .5)
             if piece == BLACK_KING:
                 score -= (2 * edge_vals[row][col])
             elif piece == WHITE_KING:
@@ -984,10 +1205,13 @@ def staticEval(state):
                         temp_row2 = row - i
                         temp_col2 = col - j
 
-                        # adj = b[temp_row][temp_col]
-                        # opp = b[temp_row2][temp_col2]
                         if is_valid(temp_row, temp_col) and i != 0 and j != 0 and is_valid(temp_row2, temp_col2):
                             if b[temp_row][temp_col] != 0 and who(b[temp_row][temp_col]) != piece and b[temp_row2][temp_col2] == 0:
+                                if b[temp_row][temp_col] == BLACK_KING or b[temp_row][temp_col] == WHITE_KING:
+                                    if who(piece) == BLACK:
+                                        score -= 5000
+                                    else:
+                                        score += 5000
                                 if abs(piece_vals.get(b[temp_row][temp_col])) > abs(reduction):
                                     reduction = piece_vals.get(b[temp_row][temp_col])
                 score += reduction / 10
